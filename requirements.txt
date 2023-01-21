@@ -16,3 +16,5 @@ pydrive==1.3.1
 rasterio==1.3.3
 pyproj==3.4.0
 scikit-image==0.19.3
+wandb==0.13.9
+python-dotenv==0.21.1
