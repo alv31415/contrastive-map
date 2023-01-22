@@ -133,14 +133,6 @@ class MapSIMCLR(nn.Module):
 
         if checkpoint_dir is not None:
             torch.save(self.checkpoint, checkpoint_dir)
-
-    def update_checkpoint(self, **checkpoint_data):
-        """
-        Updates the checkpoint dictionary.
-        """
-        for k,v in checkpoint_data:
-            if k in self.checkpoint:
-                self.checkpoint[k] = v
     
     def train(self, dataloader, epochs, checkpoint_dir = None, transform = None, batch_log_rate = 100):
         """
