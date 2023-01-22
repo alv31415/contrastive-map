@@ -23,8 +23,6 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision.models.resnet import resnet50, ResNet50_Weights
 
-import wandb
-
 from patch_dataset import CLPatchDataset
 from byol import WBMapBYOL, MapBYOL
 from simclr import MapSIMCLR
@@ -64,6 +62,7 @@ def main(args):
     torch.manual_seed(args.seed)
 
     DATASET_DIR = os.path.join(args.input, "patch_dataset.pk")
+    logging.info(f"File at {DATASET_DIR}: {os.path.isfile(DATASET_DIR)}")
 
     # create the DataSet object (or load it if available)
     if os.path.isfile(DATASET_DIR):
