@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
-#SBATCH --time=0-00:05:00
+#SBATCH --time=0-02:30:00
 #SBATCH --partition=PGR-Standard
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
@@ -60,7 +60,7 @@ echo "________________________________________"
 
 # run code
 echo "Running main.py in ${EXPERIMENT_DIR}"
-python ${EXPERIMENT_DIR}/main.py --batch-size 50 \
+python ${EXPERIMENT_DIR}/main.py --batch-size 32 \
 								 --patch-size 64 \
 								 --epochs 5 \
 								 --seed 23 \
