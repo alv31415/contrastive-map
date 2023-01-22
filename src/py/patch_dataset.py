@@ -65,8 +65,8 @@ class CLPatchDataset(Dataset):
         patches = []
 
         for file in os.listdir(directory):
-            if file.endswith("tif"):
-                file_name = f"{directory}/{file}"
+            if file.endswith("png") or file.endswith("tif"):
+                file_name = os.path.join(directory, file)
                 patches.append(MapPatch.get_map_patch_list(file_name = file_name, 
                                                            patch_width = patch_width, 
                                                            verbose = verbose))
