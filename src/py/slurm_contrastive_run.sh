@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --output=/home/%u/slurm_logs/slurm-%A_%a.out
-#SBATCH --error=/home/%u/slurm_logs/slurm-err-%A_%a.out
+#SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-%A_%a.out
+#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --mem=14000
@@ -29,7 +29,6 @@ EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
 DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals
 
 # activate the virtual environment
-
 echo "Activating virtual environment at ${HOME_DIR}/henv/bin/activate"
 source ${HOME_DIR}/henv/bin/activate
 
