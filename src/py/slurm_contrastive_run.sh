@@ -34,12 +34,21 @@ source ${HOME_DIR}/henv/bin/activate
 
 echo "________________________________________"
 
-# create scratch disk directory
+# create scratch disk directory & any other directories which might not exist
 echo "Creating directory in scratch disk: ${SCRATCH_DIR}"
 mkdir -p ${SCRATCH_DIR}
 
 SCRATCH_DATA_DIR=${SCRATCH_DIR}/data
 SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
+
+EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
+SLURM_OUT_DIR=${EXPERIMENT_DIR}/slurm_logs
+
+mkdir -p ${SCRATCH_DATA_DIR}
+mkdir -p ${SCRATCH_OUT_DIR}
+mkdir -p ${EXPERIMENT_OUT_DIR}
+mkdir -p ${SLURM_OUT_DIR}
+
 
 echo "________________________________________"
 
@@ -62,7 +71,6 @@ python ${EXPERIMENT_DIR}/main.py --batch-size 50 \
 
 echo "________________________________________"
 
-EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
 
 # transfer the data file from scratch
 echo "Transferring files from ${SCRATCH_OUT_DIR} to ${EXPERIMENT_OUT_DIR}"
