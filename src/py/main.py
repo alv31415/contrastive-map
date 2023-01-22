@@ -63,15 +63,16 @@ def main(args):
 
     torch.manual_seed(args.seed)
 
-    DATASET_DIR = os.path.join(args.input, "data/patch_dataset.pk")
+    DATASET_DIR = os.path.join(args.input, "patch_dataset.pk")
 
     # create the DataSet object (or load it if available)
     if os.path.isfile(DATASET_DIR):
         with open(DATASET_DIR, "rb") as f:
             cl_patch_dataset = pk.load(f)
     else:
-        cl_patch_dataset = CLPatchDataset.from_dir(os.path.join(args.input, "data/originals"),
-                                                   args.patch_size, verbose=True)
+        cl_patch_dataset = CLPatchDataset.from_dir(map_directory = args.input,
+                                                   patch_width = args.patch_size,
+                                                   verbose=True)
         cl_patch_dataset.save(DATASET_DIR)
 
     # create the DataLoader object

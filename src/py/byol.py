@@ -340,7 +340,7 @@ class WBMapBYOL(MapBYOL):
                                        model_state_dict = self.state_dict(),
                                        optimiser_state_dict = self.optimiser.state_dict,
                                        loss = loss.cpu(),
-                                       avg_loss_20 = np.mean(batch_losses[-20:]),
+                                       avg_loss_20 = torch.mean(batch_losses[-20:]),
                                        run_end = datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
                 
                 metrics = {"BYOL/train_loss": self.checkpoint["loss"], 
