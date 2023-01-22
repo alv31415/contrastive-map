@@ -40,6 +40,8 @@ class CLPatchDataset(Dataset):
         X_1 = []
         X_2 = []
 
+        logging.info(f"Directories found: {os.listdir(map_directory)}")
+
         for folder in os.listdir(map_directory):
             if folder.isdigit():
                 if verbose:
