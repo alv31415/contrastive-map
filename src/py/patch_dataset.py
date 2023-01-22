@@ -40,7 +40,8 @@ class CLPatchDataset(Dataset):
         X_1 = []
         X_2 = []
 
-        logging.info(f"Directories found: {os.listdir(map_directory)}")
+        logging.info(f"Directories found: {sorted(os.listdir(map_directory))}")
+        logging.info(f"Files in first directory: {os.listdir(os.path.join(map_directory, os.listdir(map_directory)[0]))}")
 
         for folder in os.listdir(map_directory):
             if folder.isdigit():
