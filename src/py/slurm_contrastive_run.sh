@@ -54,7 +54,7 @@ echo "________________________________________"
 
 # transfer the data file to scratch
 echo "Transferring files from ${DATA_DIR} to ${SCRATCH_DATA_DIR}"
-rsync --archive --verbose --update --compress --progress ${DATA_DIR}/ ${SCRATCH_DATA_DIR}
+rsync --archive --update --compress --progress ${DATA_DIR}/ ${SCRATCH_DATA_DIR}
 
 echo "________________________________________"
 
@@ -74,7 +74,7 @@ echo "________________________________________"
 
 # transfer the data file from scratch
 echo "Transferring files from ${SCRATCH_OUT_DIR} to ${EXPERIMENT_OUT_DIR}"
-rsync --archive --verbose --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
+rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
 
 echo "________________________________________"
 
