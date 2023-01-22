@@ -7,7 +7,7 @@
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-02:30:00
-#SBATCH --partition=PGR-Standard
+#SBATCH --partition=Teach-Short
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
@@ -54,7 +54,7 @@ echo "________________________________________"
 
 # transfer the data file to scratch
 echo "Transferring files from ${DATA_DIR} to ${SCRATCH_DATA_DIR}"
-rsync --archive --verbose --update --compress --progress ${DATA_DIR}/ ${SCRATCH_DATA_DIR}
+rsync --archive --update --compress --progress ${DATA_DIR}/ ${SCRATCH_DATA_DIR}
 
 echo "________________________________________"
 
@@ -74,7 +74,7 @@ echo "________________________________________"
 
 # transfer the data file from scratch
 echo "Transferring files from ${SCRATCH_OUT_DIR} to ${EXPERIMENT_OUT_DIR}"
-rsync --archive --verbose --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
+rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
 
 echo "________________________________________"
 
