@@ -7,7 +7,7 @@
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-02:30:00
-#SBATCH --partition=PGR-Standard
+#SBATCH --partition=Teach-Short
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
