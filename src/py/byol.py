@@ -284,6 +284,8 @@ class WBMapBYOL(MapBYOL):
                                    is logged. By default logging is performed every 100 batches.
 
             """
+
+            wandb.login()
             
             wandb.init(project="honours-project",
                        name = f"slurm_experiment_{time.strftime('%Y%m%d_%H%M%S')}",
