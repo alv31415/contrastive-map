@@ -41,7 +41,7 @@ def get_parser():
                         help="number of epochs to train (default: 15)")
     parser.add_argument("--lr", type=float, default=0.001, metavar="LR",
                         help="learning rate (default: 0.001)")
-    parser.add_argument("--seed", type=int, default=23, metavar="S",
+    parser.add_argument("-s", "--seed", type=int, default=23, metavar="S",
                         help="random seed (default: 23)")
     parser.add_argument("-l", "--log-interval", type=int, default=50, metavar="N",
                         help="how many batches to wait before logging "
