@@ -117,7 +117,7 @@ def main(args):
 if __name__ == "__main__":
     parser = get_parser()
     args = parser.parse_args()
-    logging.info(f"Parsing arguments...")
+    logging.info(f"Parsed arguments: {args}")
     if not args.debug:
         main(args)
     else:
