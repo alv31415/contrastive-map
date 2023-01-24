@@ -226,11 +226,10 @@ class MapBYOL(nn.Module):
 
         for epoch in range(epochs):
             batch_losses = []
+            logging.info(f"Starting Epoch: {epoch + 1}")
             for batch, (x_1,x_2) in enumerate(dataloader):
                 # x_1 and x_2 are tensors containing patches, 
                 # such that x_1[i] and x_2[i] are patches for the same area
-
-                logging.info(batch)
                 
                 self.optimiser.zero_grad()
 
