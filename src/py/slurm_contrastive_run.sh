@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
-#SBATCH --time=0-02:30:00
+#SBATCH --time=0-08:00:00
 #SBATCH --partition=Teach-Short
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
