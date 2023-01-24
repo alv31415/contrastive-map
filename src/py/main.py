@@ -77,7 +77,7 @@ def main(args):
     logging.info(f"File at {DATASET_DIR}: {os.path.isfile(DATASET_DIR)}")
 
     # create the DataLoader object
-    cl_patch_loader = DataLoader(cl_patch_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+    cl_patch_loader = DataLoader(cl_patch_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
 
     # create the BYOL model
     projector_parameters = {"input_dim": 2048,
@@ -105,6 +105,8 @@ def main(args):
     byol_nn.compile_optimiser()
 
     logging.info(f"Using device: {byol_nn.device}")
+
+    torch.cuda.empty_cache()
 
     # train the model
     byol_nn.train(dataloader = cl_patch_loader,

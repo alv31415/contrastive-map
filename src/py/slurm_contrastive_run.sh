@@ -4,7 +4,7 @@
 #SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
-#SBATCH --mem=14000
+#SBATCH --mem=8G
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-02:30:00
 #SBATCH --partition=Teach-Short
