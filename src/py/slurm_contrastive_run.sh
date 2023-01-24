@@ -69,7 +69,7 @@ echo "________________________________________"
 echo "Running main.py in ${EXPERIMENT_DIR}"
 python ${EXPERIMENT_DIR}/main.py --batch-size 16 \
 								 --patch-size 64 \
-								 --epochs 5 \
+								 --epochs 1 \
 								 --seed 23 \
 								 --log-interval 20 \
 								 --input "${SCRATCH_DATA_DIR}" \
