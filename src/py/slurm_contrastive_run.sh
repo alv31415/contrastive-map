@@ -12,6 +12,7 @@
 START=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
 echo "Using W&B API key: ${WANDB_API_KEY}"
+echo "Running W&B in ${WANDB_MODE} mode"
 
 STUDENT_ID=$(whoami)
 
