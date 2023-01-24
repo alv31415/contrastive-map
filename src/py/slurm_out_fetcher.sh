@@ -44,6 +44,7 @@ mkdir -p ${SLURM_OUT_DIR}
 
 # see if anything is in out directory
 ls ${SCRATCH_OUT_DIR}
+ls ${SCRATCH_DATA_DIR}
 
 echo "________________________________________"
 
