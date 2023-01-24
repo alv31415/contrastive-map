@@ -4,6 +4,8 @@ import time
 import os
 import pickle as pk
 
+import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -231,7 +233,7 @@ class MapBYOL(nn.Module):
 
                 if batch % (len(dataloader) // batch_log_rate + 1) == 0:
                     with torch.no_grad():
-                        avg_loss = torch.mean(batch_losses[-20:])
+                        avg_loss = np.mean(batch_losses[-20:])
                         print(f"Epoch {epoch + 1}: [{batch + 1}/{len(dataloader)}] ---- BYOL-Loss = {avg_loss}")
                         
                         self.update_checkpoint(checkpoint_dir = checkpoint_dir,
@@ -251,7 +253,7 @@ class MapBYOL(nn.Module):
                                    model_state_dict = self.state_dict(),
                                    optimiser_state_dict = self.optimiser.state_dict,
                                    loss = loss.cpu(),
-                                   avg_loss_20 = torch.mean(batch_losses[-20:]),
+                                   avg_loss_20 = np.mean(batch_losses[-20:]),
                                    run_end = datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
         
         return self.checkpoint
@@ -326,7 +328,7 @@ class WBMapBYOL(MapBYOL):
 
                     if batch % (len(dataloader) // batch_log_rate + 1) == 0:
                         with torch.no_grad():
-                            avg_loss = torch.mean(batch_losses[-20:])
+                            avg_loss = np.mean(batch_losses[-20:])
                             print(f"Epoch {epoch + 1}: [{batch + 1}/{len(dataloader)}] ---- BYOL-Loss = {avg_loss}")
 
                             self.update_checkpoint(checkpoint_dir = checkpoint_dir,
@@ -350,7 +352,7 @@ class WBMapBYOL(MapBYOL):
                                        model_state_dict = self.state_dict(),
                                        optimiser_state_dict = self.optimiser.state_dict,
                                        loss = loss.cpu(),
-                                       avg_loss_20 = torch.mean(batch_losses[-20:]),
+                                       avg_loss_20 = np.mean(batch_losses[-20:]),
                                        run_end = datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
                 
                 metrics = {"BYOL/train_loss": self.checkpoint["loss"], 
