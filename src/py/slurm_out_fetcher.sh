@@ -48,9 +48,10 @@ ls ${SCRATCH_OUT_DIR}
 echo "________________________________________"
 
 
-# transfer the data file from scratch
+# transfer the output file from scratch
 echo "Transferring files from ${SCRATCH_OUT_DIR} to ${EXPERIMENT_OUT_DIR}"
 rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
+rsync --archive --update --compress --progress ${SCRATCH_DATA_DIR}/patch_dataset.pk ${EXPERIMENT_OUT_DIR}
 
 echo "________________________________________"
 
