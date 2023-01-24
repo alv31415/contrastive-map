@@ -1,6 +1,8 @@
 from datetime import datetime
 from copy import deepcopy
 import time
+import os
+import pickle as pk
 
 import torch
 import torch.nn as nn
@@ -176,7 +178,7 @@ class MapBYOL(nn.Module):
         # average the loss over the batch
         return (loss_1 + loss_2).mean()
     
-    def update_checkpoint(self, checkpoint_dir, **checkpoint_data):
+    def update_checkpoint(self, checkpoint_dir, batch_losses, **checkpoint_data):
         """
         Updates the checkpoint dictionary.
         """
@@ -185,7 +187,12 @@ class MapBYOL(nn.Module):
                 self.checkpoint[k] = v
 
         if checkpoint_dir is not None:
-          torch.save(self.checkpoint, checkpoint_dir)
+            model_params_dir = os.path.join(checkpoint_dir, "byol_checkpoint.pt")
+            torch.save(self.checkpoint, model_params_dir)
+
+            batch_loss_dir = os.path.join(checkpoint_dir, f"batch_loss_logs_{checkpoint_data.get('epoch', 0)}.pk")
+            with open(batch_loss_dir, "w") as f:
+                pk.dump(batch_losses, f)
                                                                             
     
     def train(self, dataloader, epochs, checkpoint_dir = None, transform = None, batch_log_rate = 100):
@@ -228,6 +235,7 @@ class MapBYOL(nn.Module):
                         print(f"Epoch {epoch + 1}: [{batch + 1}/{len(dataloader)}] ---- BYOL-Loss = {avg_loss}")
                         
                         self.update_checkpoint(checkpoint_dir = checkpoint_dir,
+                                               batch_losses = batch_losses,
                                                epoch = epoch,
                                                batch = batch,
                                                model_state_dict = self.state_dict(),

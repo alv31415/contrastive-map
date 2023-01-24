@@ -77,7 +77,7 @@ def main(args):
     logging.info(f"File at {DATASET_DIR}: {os.path.isfile(DATASET_DIR)}")
 
     # create the DataLoader object
-    cl_patch_loader = DataLoader(cl_patch_dataset, batch_size = args.batch_size, shuffle = True)
+    cl_patch_loader = DataLoader(cl_patch_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
 
     # create the BYOL model
     projector_parameters = {"input_dim": 2048,
@@ -96,21 +96,21 @@ def main(args):
 
     encoder = resnet50(weights=ResNet50_Weights.DEFAULT)
 
-    wb_byol_nn = WBMapBYOL(encoder=encoder,
-                           encoder_layer_idx=-2,
-                           projector_parameters=projector_parameters,
-                           predictor_parameters=predictor_parameters,
-                           ema_tau = args.byol_ema_tau)
+    byol_nn = MapBYOL(encoder=encoder,
+                      encoder_layer_idx=-2,
+                      projector_parameters=projector_parameters,
+                      predictor_parameters=predictor_parameters,
+                      ema_tau = args.byol_ema_tau)
 
-    wb_byol_nn.compile_optimiser()
+    byol_nn.compile_optimiser()
 
-    logging.info(f"Using device: {wb_byol_nn.device}")
+    logging.info(f"Using device: {byol_nn.device}")
 
     # train the model
-    wb_byol_nn.train(dataloader = cl_patch_loader,
+    byol_nn.train(dataloader = cl_patch_loader,
                      epochs = args.epochs,
-                     checkpoint_dir = os.path.join(args.output, "byol_checkpoint.pt"),
-                     transform = wb_byol_nn.img_to_resnet,
+                     checkpoint_dir = args.output,
+                     transform = byol_nn.img_to_resnet,
                      batch_log_rate = args.log_interval)
 
 # --------------------------------------------------- RUN ---------------------------------------------------

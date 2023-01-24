@@ -85,11 +85,5 @@ rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_
 
 echo "________________________________________"
 
-# upload results to WANDB
-eacho "Syncing results with Weights & Biases"
-wandb sync ${EXPERIMENT_DIR}
-
-echo "________________________________________"
-
 END=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Job completed succesfully at ${END}"
