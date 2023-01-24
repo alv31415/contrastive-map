@@ -54,8 +54,10 @@ mkdir -p ${SCRATCH_OUT_DIR}
 mkdir -p ${EXPERIMENT_OUT_DIR}
 mkdir -p ${SLURM_OUT_DIR}
 
-rm -rf ${SCRATCH_DATA_DIR}/patch_dataset.pk.pk ||:
+# see if anything is in out directory
+ls ${SCRATCH_OUT_DIR}
 
+rm -rf ${SCRATCH_OUT_DIR}/* ||:
 
 echo "________________________________________"
 

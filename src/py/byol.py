@@ -231,7 +231,7 @@ class MapBYOL(nn.Module):
                 self.optimiser.step()
                 self.update_target_network()
 
-                if batch % (len(dataloader) // batch_log_rate + 1) == 0:
+                if batch % (len(dataloader) // batch_log_rate + 1) == 0 and batch != 0:
                     with torch.no_grad():
                         avg_loss = np.mean(batch_losses[-20:])
                         print(f"Epoch {epoch + 1}: [{batch + 1}/{len(dataloader)}] ---- BYOL-Loss = {avg_loss}")
