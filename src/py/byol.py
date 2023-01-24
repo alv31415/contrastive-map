@@ -193,7 +193,7 @@ class MapBYOL(nn.Module):
             torch.save(self.checkpoint, model_params_dir)
 
             batch_loss_dir = os.path.join(checkpoint_dir, f"batch_loss_logs_{checkpoint_data.get('epoch', 0)}.pk")
-            with open(batch_loss_dir, "w") as f:
+            with open(batch_loss_dir, "wb") as f:
                 pk.dump(batch_losses, f)
                                                                             
     
