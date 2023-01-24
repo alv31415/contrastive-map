@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-%A_%a.out
-#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
+#SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-fetch-%A_%a.out
+#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-fetch-err-%A_%a.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --mem=14000
@@ -10,7 +10,7 @@
 #SBATCH --partition=Teach-Short
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
-echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
+echo "Fetching job starting at ${START} on ${SLURM_JOB_NODELIST}"
 STUDENT_ID=$(whoami)
 
 
@@ -19,23 +19,11 @@ source /home/${STUDENT_ID}/.bashrc
 
 echo "________________________________________"
 
-echo "Using W&B API key: ${WANDB_API_KEY}"
-echo "Running W&B in ${WANDB_MODE} mode"
-
-# make script bail out after first error
-# set -e
-
-echo "________________________________________"
-
 # define main directories
 HOME_DIR=/home/${STUDENT_ID}/honours-project
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
 DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals
-
-# activate the virtual environment
-echo "Activating virtual environment at ${HOME_DIR}/henv/bin/activate"
-source ${HOME_DIR}/henv/bin/activate
 
 echo "________________________________________"
 
@@ -56,25 +44,6 @@ mkdir -p ${SLURM_OUT_DIR}
 
 # see if anything is in out directory
 ls ${SCRATCH_OUT_DIR}
-
-echo "________________________________________"
-
-# transfer the data file to scratch
-echo "Transferring files from ${DATA_DIR} to ${SCRATCH_DATA_DIR}"
-rsync --archive --update --compress --progress ${DATA_DIR}/ ${SCRATCH_DATA_DIR}
-
-echo "________________________________________"
-
-# run code
-echo "Running main.py in ${EXPERIMENT_DIR}"
-python ${EXPERIMENT_DIR}/main.py --batch-size 16 \
-								 --patch-size 64 \
-								 --epochs 1 \
-								 --seed 23 \
-								 --log-interval 1000 \
-								 --input "${SCRATCH_DATA_DIR}" \
-								 --output "${SCRATCH_OUT_DIR}" \
-								 --byol-ema-tau 0.99
 
 echo "________________________________________"
 
