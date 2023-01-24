@@ -4,7 +4,7 @@
 #SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
-#SBATCH --mem=8G
+#SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-02:30:00
 #SBATCH --partition=Teach-Short
@@ -73,7 +73,7 @@ python ${EXPERIMENT_DIR}/main.py --batch-size 16 \
 								 --patch-size 64 \
 								 --epochs 1 \
 								 --seed 23 \
-								 --log-interval 20 \
+								 --log-interval 1000 \
 								 --input "${SCRATCH_DATA_DIR}" \
 								 --output "${SCRATCH_OUT_DIR}" \
 								 --byol-ema-tau 0.99
