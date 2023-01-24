@@ -80,12 +80,19 @@ def main(args):
     cl_patch_loader = DataLoader(cl_patch_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
 
     # create the BYOL model
-    projector_parameters = {"input_dim": 2048,
+    projector_50_parameters = {"input_dim": 2048,
                             "hidden_dim": 4096,
                             "output_dim": 256,
                             "activation": nn.ReLU(),
                             "use_bias": True,
                             "use_batch_norm": True}
+
+    projector_18_parameters = {"input_dim": 512,
+                               "hidden_dim": 2048,
+                               "output_dim": 256,
+                               "activation": nn.ReLU(),
+                               "use_bias": True,
+                               "use_batch_norm": True}
 
     predictor_parameters = {"input_dim": 256,
                             "hidden_dim": 1024,
@@ -98,7 +105,7 @@ def main(args):
 
     byol_nn = MapBYOL(encoder=encoder,
                       encoder_layer_idx=-2,
-                      projector_parameters=projector_parameters,
+                      projector_parameters=projector_18_parameters,
                       predictor_parameters=predictor_parameters,
                       ema_tau = args.byol_ema_tau)
 
