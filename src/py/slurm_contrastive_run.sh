@@ -11,6 +11,7 @@
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
+STUDENT_ID=$(whoami)
 
 
 # make available all commands
@@ -20,8 +21,6 @@ echo "________________________________________"
 
 echo "Using W&B API key: ${WANDB_API_KEY}"
 echo "Running W&B in ${WANDB_MODE} mode"
-
-STUDENT_ID=$(whoami)
 
 # make script bail out after first error
 # set -e
@@ -54,6 +53,8 @@ mkdir -p ${SCRATCH_DATA_DIR}
 mkdir -p ${SCRATCH_OUT_DIR}
 mkdir -p ${EXPERIMENT_OUT_DIR}
 mkdir -p ${SLURM_OUT_DIR}
+
+rm -rf ${SCRATCH_DATA_DIR}/patch_dataset.pk.pk ||:
 
 
 echo "________________________________________"

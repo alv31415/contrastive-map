@@ -111,5 +111,5 @@ class CLPatchDataset(Dataset):
         return x_1, x_2
     
     def save(self, file_name):
-        with open(f"{file_name}.pk", "wb") as f:
+        with open(file_name, "wb") as f:
             pk.dump(self, f)
