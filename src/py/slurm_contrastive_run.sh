@@ -19,7 +19,7 @@ STUDENT_ID=$(whoami)
 source /home/${STUDENT_ID}/.bashrc
 
 # make script bail out after first error
-set -e
+# set -e
 
 echo "________________________________________"
 
@@ -76,6 +76,12 @@ echo "________________________________________"
 # transfer the data file from scratch
 echo "Transferring files from ${SCRATCH_OUT_DIR} to ${EXPERIMENT_OUT_DIR}"
 rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
+
+echo "________________________________________"
+
+# upload results to WANDB
+eacho "Syncing results with Weights & Biases"
+wandb sync ${EXPERIMENT_DIR}
 
 echo "________________________________________"
 

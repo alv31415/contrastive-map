@@ -74,6 +74,8 @@ def main(args):
                                                    verbose=True)
         cl_patch_dataset.save(DATASET_DIR)
 
+    logging.info(f"File at {DATASET_DIR}: {os.path.isfile(DATASET_DIR)}")
+
     # create the DataLoader object
     cl_patch_loader = DataLoader(cl_patch_dataset, batch_size = args.batch_size, shuffle = True)
 
