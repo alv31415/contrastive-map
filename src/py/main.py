@@ -21,7 +21,7 @@ logging.info(f"Running main & importing modules...")
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torchvision.models.resnet import resnet50, ResNet50_Weights
+from torchvision.models.resnet import resnet18, ResNet18_Weights
 
 from patch_dataset import CLPatchDataset
 from byol import WBMapBYOL, MapBYOL
@@ -94,7 +94,7 @@ def main(args):
                             "use_bias": True,
                             "use_batch_norm": True}
 
-    encoder = resnet50(weights=ResNet50_Weights.DEFAULT)
+    encoder = resnet18(weights=ResNet18_Weights.DEFAULT)
 
     byol_nn = MapBYOL(encoder=encoder,
                       encoder_layer_idx=-2,
@@ -106,7 +106,7 @@ def main(args):
 
     logging.info(f"Using device: {byol_nn.device}")
 
-    torch.cuda.empty_cache()
+    #torch.cuda.empty_cache()
 
     # train the model
     byol_nn.train(dataloader = cl_patch_loader,

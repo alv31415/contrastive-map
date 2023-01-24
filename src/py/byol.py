@@ -3,6 +3,17 @@ from copy import deepcopy
 import time
 import os
 import pickle as pk
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+logging.basicConfig(format="%(asctime)s %(levelname)-4s %(message)s",
+                    level=logging.INFO,
+                    datefmt="%d-%m-%Y %H:%M:%S")
+
+logging.getLogger("PIL").setLevel(logging.WARNING)
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 import numpy as np
 
@@ -218,6 +229,8 @@ class MapBYOL(nn.Module):
             for batch, (x_1,x_2) in enumerate(dataloader):
                 # x_1 and x_2 are tensors containing patches, 
                 # such that x_1[i] and x_2[i] are patches for the same area
+
+                logging.info(batch)
                 
                 self.optimiser.zero_grad()
 
@@ -234,7 +247,7 @@ class MapBYOL(nn.Module):
                 if batch % (len(dataloader) // batch_log_rate + 1) == 0 and batch != 0:
                     with torch.no_grad():
                         avg_loss = np.mean(batch_losses[-20:])
-                        print(f"Epoch {epoch + 1}: [{batch + 1}/{len(dataloader)}] ---- BYOL-Loss = {avg_loss}")
+                        logging.info(f"Epoch {epoch + 1}: [{batch + 1}/{len(dataloader)}] ---- BYOL-Loss = {avg_loss}")
                         
                         self.update_checkpoint(checkpoint_dir = checkpoint_dir,
                                                batch_losses = batch_losses,
