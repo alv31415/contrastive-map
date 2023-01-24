@@ -67,7 +67,7 @@ echo "________________________________________"
 
 # run code
 echo "Running main.py in ${EXPERIMENT_DIR}"
-python ${EXPERIMENT_DIR}/main.py --batch-size 32 \
+python ${EXPERIMENT_DIR}/main.py --batch-size 16 \
 								 --patch-size 64 \
 								 --epochs 5 \
 								 --seed 23 \
