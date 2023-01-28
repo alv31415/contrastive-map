@@ -1,0 +1,2 @@
+python main.py --epochs 5 --patch-size 64
+python main.py --epochs 8 --patch-size 34
