@@ -12,9 +12,6 @@ logging.basicConfig(format="%(asctime)s %(levelname)-4s %(message)s",
                     level=logging.INFO,
                     datefmt="%d-%m-%Y %H:%M:%S")
 
-logging.getLogger("PIL").setLevel(logging.WARNING)
-logging.getLogger("matplotlib").setLevel(logging.WARNING)
-
 import numpy as np
 
 import torch
@@ -267,13 +264,13 @@ class MapBYOL(nn.Module):
                     with torch.no_grad():
                         avg_loss = np.mean(batch_losses[-20:])
                         logging.info(
-                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL-Training-Loss = {avg_loss}")
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Training Loss = {avg_loss}")
 
                         if batch % (len(train_loader) // 3 * batch_log_rate + 1) == 0:
                             validation_loss = self.get_validation_loss(validation_loader, transform)
                             validation_losses.append(validation_loss)
                             logging.info(
-                                f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL-Validation-Loss = {validation_loss}")
+                                f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Validation Loss = {validation_loss}")
 
                         self.update_checkpoint(checkpoint_dir=checkpoint_dir,
                                                batch_losses=batch_losses,

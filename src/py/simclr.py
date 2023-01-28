@@ -1,13 +1,23 @@
 from datetime import datetime
 import time
+import os
+import pickle as pk
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+logging.basicConfig(format="%(asctime)s %(levelname)-4s %(message)s",
+                    level=logging.INFO,
+                    datefmt="%d-%m-%Y %H:%M:%S")
+
+import numpy as np
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as T
 import torch.nn.functional as F
-
-import wandb
 
 from mlp import MLP
 from encoder_projector_nn import EncoderProjectorNN
@@ -37,14 +47,16 @@ class MapSIMCLR(nn.Module):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         # create checkpoint
-        self.checkpoint = {"epoch" : 0,
-                           "batch" : 0,
-                           "model_state_dict" : self.state_dict(),
+        self.checkpoint = {"epoch": 0,
+                           "batch": 0,
+                           "model_state_dict": self.state_dict(),
                            "optimiser_state_dict": None,
-                           "loss" : 0,
-                           "avg_loss_20" : 0,
-                           "run_start" : datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                           "run_end" : None}
+                           "loss": 0,
+                           "avg_loss_20": 0,
+                           "batch_losses": [],
+                           "validation_losses ": [],
+                           "run_start": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                           "run_end": None}
     
     def img_to_resnet(self, img, dim = None):
         """
@@ -123,7 +135,19 @@ class MapSIMCLR(nn.Module):
         """
         self.optimiser = optim.Adam(self.parameters(), **kwargs)
 
-    def update_checkpoint(self, checkpoint_dir, **checkpoint_data):
+    def get_loss(self, x_1, x_2):
+        """
+        Computes the loss given positive-pair batches (x_1, x_2)
+        """
+
+        z_1 = self.model(x_1)
+        z_2 = self.model(x_2)
+
+        z_batch = torch.stack((z_1, z_2), dim=1).view(-1, self.OUTPUT_DIM)
+
+        return self.contrastive_loss(z_batch)
+
+    def update_checkpoint(self, checkpoint_dir, batch_losses, **checkpoint_data):
         """
         Updates the checkpoint dictionary.
         """
@@ -132,9 +156,32 @@ class MapSIMCLR(nn.Module):
                 self.checkpoint[k] = v
 
         if checkpoint_dir is not None:
-            torch.save(self.checkpoint, checkpoint_dir)
+            model_params_dir = os.path.join(checkpoint_dir, "simclr_checkpoint.pt")
+            torch.save(self.checkpoint, model_params_dir)
+
+            batch_loss_dir = os.path.join(checkpoint_dir, f"batch_loss_logs_{checkpoint_data.get('epoch', 0)}.pk")
+            with open(batch_loss_dir, "wb") as f:
+                pk.dump(batch_losses, f)
+
+    @torch.no_grad()
+    def get_validation_loss(self, validation_loader, transform=None):
+        """
+        Computes the average validation loss of the model.
+        """
+        val_losses = []
+
+        self.eval()
+
+        for x_1, x_2 in validation_loader:
+            x_1, x_2 = transform(x_1.to(self.device)), transform(x_2.to(self.device))
+            val_losses.append(self.get_loss(x_1, x_2))
+
+        self.train()
+
+        return np.mean(val_losses)
     
-    def train(self, dataloader, epochs, checkpoint_dir = None, transform = None, batch_log_rate = 100):
+    def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, transform=None,
+                    batch_log_rate=100):
         """
         Trains the network.
         """
@@ -143,47 +190,56 @@ class MapSIMCLR(nn.Module):
 
         for epoch in range(epochs):
             batch_losses = []
-            for batch, (x_1,x_2) in enumerate(dataloader):
+            validation_losses = []
+            logging.info(f"Starting Epoch: {epoch + 1}")
+            for batch, (x_1,x_2) in enumerate(train_loader):
                 # x_1 and x_2 are tensors containing patches, 
                 # such that x_1[i] and x_2[i] are patches for the same area
                 
                 self.optimiser.zero_grad()
 
                 x_1, x_2 = transform(x_1.to(self.device)), transform(x_2.to(self.device))
-                
-                z_1 = self.model(x_1)
-                z_2 = self.model(x_2)
-                
-                z_batch = torch.stack((z_1,z_2), dim = 1).view(-1, self.OUTPUT_DIM)
 
-                loss = self.contrastive_loss(z_batch)
+                loss = self.get_loss(x_1, x_2)
 
                 batch_losses.append(loss.cpu().detach())
                 
                 loss.backward()
                 self.optimiser.step()
 
-                if batch % (len(dataloader) // batch_log_rate + 1) == 0:
+                if batch % (len(train_loader) // batch_log_rate + 1) == 0 and batch != 0:
                     with torch.no_grad():
-                        avg_loss = torch.mean(batch_losses[-20:])
-                        print(f"Epoch {epoch + 1}: [{batch + 1}/{len(dataloader)}] ---- NT-XENT = {avg_loss}")
+                        avg_loss = np.mean(batch_losses[-20:])
+                        logging.info(
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Training Loss = {avg_loss}")
 
-                        self.update_checkpoint(checkpoint_dir = checkpoint_dir,
-                                               epoch = epoch,
-                                               batch = batch,
-                                               model_state_dict = self.state_dict(),
-                                               optimiser_state_dict = self.optimiser.state_dict,
-                                               loss = loss.cpu(),
-                                               avg_loss_20 = avg_loss,
-                                               run_end = datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-                
-        with torch.no_grad():
-            self.update_checkpoint(epoch = epochs,
-                                   batch = len(dataloader),
-                                   model_state_dict = self.state_dict(),
-                                   optimiser_state_dict = self.optimiser.state_dict,
-                                   loss = loss.cpu(),
-                                   avg_loss_20 = torch.mean(batch_losses[-20:]),
-                                   run_end = datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+                        if batch % (len(train_loader) // 3 * batch_log_rate + 1) == 0:
+                            validation_loss = self.get_validation_loss(validation_loader, transform)
+                            validation_losses.append(validation_loss)
+                            logging.info(
+                                f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Validation Loss = {validation_loss}")
 
-        return self.checkpoint
+                        self.update_checkpoint(checkpoint_dir=checkpoint_dir,
+                                               batch_losses=batch_losses,
+                                               validation_losses=validation_losses,
+                                               epoch=epoch,
+                                               batch=batch,
+                                               model_state_dict=self.state_dict(),
+                                               optimiser_state_dict=self.optimiser.state_dict,
+                                               loss=loss.cpu().detach(),
+                                               avg_loss_20=avg_loss,
+                                               run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+
+            with torch.no_grad():
+                self.update_checkpoint(checkpoint_dir=checkpoint_dir,
+                                       batch_losses=batch_losses,
+                                       validation_losses=validation_losses,
+                                       epoch=epochs,
+                                       batch=len(train_loader),
+                                       model_state_dict=self.state_dict(),
+                                       optimiser_state_dict=self.optimiser.state_dict,
+                                       loss=loss.cpu().detach(),
+                                       avg_loss_20=np.mean(batch_losses[-20:]),
+                                       run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+
+            return self.checkpoint
