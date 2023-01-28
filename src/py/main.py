@@ -21,11 +21,12 @@ logging.info(f"Running main & importing modules...")
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torchvision.models.resnet import resnet18, ResNet18_Weights
+from torchvision.models.resnet import resnet18, ResNet18_Weights, resnet34, ResNet34_Weights, resnet50, ResNet50_Weights
 
 from patch_dataset import CLPatchDataset
 from byol import WBMapBYOL, MapBYOL
 from simclr import MapSIMCLR
+from cnn import CNN
 
 # --------------------------------------------------- PARSER ---------------------------------------------------
 
@@ -50,8 +51,19 @@ def get_parser():
                                                               "directory to write output to")
     parser.add_argument("-t", "--byol-ema-tau", type=float, default=0.99, metavar="TAU",
                         help="tau for BYOL's exponential moving average (default: 0.99)")
+    parser.add_argument("--encoder-layer-idx", type=int, default=-1, metavar="i",
+                        help="index from which to take the output of the encoder (default: -1)")
+    parser.add_argument("--simclr-tau", type=float, default=1.0, metavar="TAU",
+                        help="tau for SimCLRs NTXENT loss (default: 1)")
     parser.add_argument("-d", "--debug", action='store_true', default=False,
                         help="disables model running to debug inputs")
+    parser.add_argument("-m", "--use-byol", action='store_true', default=False,
+                        help="if present, uses BYOL model, otherwise SimCLR")
+    parser.add_argument("-x", "--experiment-name", help = "name of experiment, to store logs and outputs")
+    parser.add_argument("-r", "--encoder", choices = ["cnn", "resnet18", "resnet34", "resnet50"],
+                        help="type of encoder to use (out of cnn, resnet18, resnet50)")
+    parser.add_argument("--pretrain-encoder", action = "store_true", default=False,
+                        help = "whether to use pretrained weights in the encoder (only works for ResNet18 or ResNet50)")
 
     return parser
 
@@ -79,21 +91,52 @@ def main(args):
     # create the DataLoader object
     cl_patch_loader = DataLoader(cl_patch_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
 
+    use_transform = True
+    match args.encoder:
+        case "cnn":
+            use_transform = False
+            projector_parameters = {}
+            encoder = CNN()
+        case "resnet34":
+            projector_parameters = {"input_dim": 512,
+                                    "hidden_dim": 2048,
+                                    "output_dim": 256,
+                                    "activation": nn.ReLU(),
+                                    "use_bias": True,
+                                    "use_batch_norm": True}
+
+            if args.pretrain_encoder:
+                encoder = resnet34(weights = ResNet34_Weights.DEFAULT)
+            else:
+                encoder = resnet34()
+        case "resnet50":
+            projector_parameters = {"input_dim": 2048,
+                                       "hidden_dim": 4096,
+                                       "output_dim": 256,
+                                       "activation": nn.ReLU(),
+                                       "use_bias": True,
+                                       "use_batch_norm": True}
+
+            if args.pretrain_encoder:
+                encoder = resnet50(weights = ResNet50_Weights.DEFAULT)
+            else:
+                encoder = resnet50()
+        case _:
+            projector_parameters = {"input_dim": 512,
+                                       "hidden_dim": 2048,
+                                       "output_dim": 256,
+                                       "activation": nn.ReLU(),
+                                       "use_bias": True,
+                                       "use_batch_norm": True}
+
+            if args.pretrain_encoder:
+                encoder = resnet18(weights = ResNet18_Weights.DEFAULT)
+            else:
+                encoder = resnet18()
+
+    logging.info(f"Using encoder {args.encoder} with pretrained weights = {args.pretrain_encoder}")
+
     # create the BYOL model
-    projector_50_parameters = {"input_dim": 2048,
-                            "hidden_dim": 4096,
-                            "output_dim": 256,
-                            "activation": nn.ReLU(),
-                            "use_bias": True,
-                            "use_batch_norm": True}
-
-    projector_18_parameters = {"input_dim": 512,
-                               "hidden_dim": 2048,
-                               "output_dim": 256,
-                               "activation": nn.ReLU(),
-                               "use_bias": True,
-                               "use_batch_norm": True}
-
     predictor_parameters = {"input_dim": 256,
                             "hidden_dim": 1024,
                             "output_dim": 256,
@@ -101,26 +144,34 @@ def main(args):
                             "use_bias": True,
                             "use_batch_norm": True}
 
-    encoder = resnet18(weights=ResNet18_Weights.DEFAULT)
+    if args.use_byol:
+        model = MapBYOL(encoder=encoder,
+                          encoder_layer_idx=args.encoder_layer_idx,
+                          projector_parameters=projector_parameters,
+                          predictor_parameters=predictor_parameters,
+                          ema_tau = args.byol_ema_tau)
 
-    byol_nn = MapBYOL(encoder=encoder,
-                      encoder_layer_idx=-2,
-                      projector_parameters=projector_18_parameters,
-                      predictor_parameters=predictor_parameters,
-                      ema_tau = args.byol_ema_tau)
+        logging.info(f"Using BYOL with tau = {args.byol_ema_tau}, with encoder layer index = {args.encoder_layer_idx}")
+    else:
+        model = MapSIMCLR(encoder=encoder,
+                          encoder_layer_idx=args.encoder_layer_idx,
+                          projector_parameters=projector_parameters,
+                          tau = args.simclr_tau)
 
-    byol_nn.compile_optimiser()
+        logging.info(f"Using SimCLR with tau = {args.simclr_tau}, with encoder layer index = {args.encoder_layer_idx}")
 
-    logging.info(f"Using device: {byol_nn.device}")
+    model.compile_optimiser()
+
+    logging.info(f"Using device: {model.device}")
 
     #torch.cuda.empty_cache()
 
     # train the model
-    byol_nn.train(dataloader = cl_patch_loader,
-                     epochs = args.epochs,
-                     checkpoint_dir = args.output,
-                     transform = byol_nn.img_to_resnet,
-                     batch_log_rate = args.log_interval)
+    model.train(dataloader = cl_patch_loader,
+                epochs = args.epochs,
+                checkpoint_dir = args.output,
+                transform = model.img_to_resnet if use_transform else None,
+                batch_log_rate = args.log_interval)
 
 # --------------------------------------------------- RUN ---------------------------------------------------
 
