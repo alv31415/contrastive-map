@@ -7,7 +7,7 @@
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-08:00:00
-#SBATCH --partition=Teach-Short
+#SBATCH --partition=Teach-LongJobs
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
@@ -72,9 +72,16 @@ python ${EXPERIMENT_DIR}/main.py --batch-size 16 \
 								 --epochs 1 \
 								 --seed 23 \
 								 --log-interval 1000 \
+								 --train-proportion 0.98 \
 								 --input "${SCRATCH_DATA_DIR}" \
 								 --output "${SCRATCH_OUT_DIR}" \
-								 --byol-ema-tau 0.99
+								 --experiment-name "b-r18-e1-b64-t0_99-p64" \
+								 --use-byol \
+								 --encoder "resnet18" \
+								 --pretrain-encoder \
+								 --encoder-layer-idx -2 \
+								 --byol-ema-tau 0.99 \
+								 --simclr-tau 0.99 \
 
 echo "________________________________________"
 
