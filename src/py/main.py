@@ -128,8 +128,13 @@ def main(args):
     match args.encoder:
         case "cnn":
             use_transform = False
-            projector_parameters = {}
-            encoder = CNN()
+            projector_parameters = {"input_dim": 512,
+                                    "hidden_dim": 2048,
+                                    "output_dim": 256,
+                                    "activation": nn.ReLU(),
+                                    "use_bias": True,
+                                    "use_batch_norm": True}
+            encoder = CNN(input_dim = args.patch_size, in_channels = 3, output_dim = 512, use_bias = True, use_batch_norm = True)
         case "resnet34":
             projector_parameters = {"input_dim": 512,
                                     "hidden_dim": 2048,
@@ -144,11 +149,11 @@ def main(args):
                 encoder = resnet34()
         case "resnet50":
             projector_parameters = {"input_dim": 2048,
-                                       "hidden_dim": 4096,
-                                       "output_dim": 256,
-                                       "activation": nn.ReLU(),
-                                       "use_bias": True,
-                                       "use_batch_norm": True}
+                                    "hidden_dim": 4096,
+                                    "output_dim": 256,
+                                    "activation": nn.ReLU(),
+                                    "use_bias": True,
+                                    "use_batch_norm": True}
 
             if args.pretrain_encoder:
                 encoder = resnet50(weights = ResNet50_Weights.DEFAULT)
@@ -156,11 +161,11 @@ def main(args):
                 encoder = resnet50()
         case _:
             projector_parameters = {"input_dim": 512,
-                                       "hidden_dim": 2048,
-                                       "output_dim": 256,
-                                       "activation": nn.ReLU(),
-                                       "use_bias": True,
-                                       "use_batch_norm": True}
+                                   "hidden_dim": 2048,
+                                   "output_dim": 256,
+                                   "activation": nn.ReLU(),
+                                   "use_bias": True,
+                                   "use_batch_norm": True}
 
             if args.pretrain_encoder:
                 encoder = resnet18(weights = ResNet18_Weights.DEFAULT)
@@ -179,10 +184,10 @@ def main(args):
 
     if args.use_byol:
         model = MapBYOL(encoder=encoder,
-                          encoder_layer_idx=args.encoder_layer_idx,
-                          projector_parameters=projector_parameters,
-                          predictor_parameters=predictor_parameters,
-                          ema_tau = args.byol_ema_tau)
+                        encoder_layer_idx=args.encoder_layer_idx,
+                        projector_parameters=projector_parameters,
+                        predictor_parameters=predictor_parameters,
+                        ema_tau = args.byol_ema_tau)
 
         logging.info(f"Using BYOL with tau = {args.byol_ema_tau}, with encoder layer index = {args.encoder_layer_idx}")
     else:
