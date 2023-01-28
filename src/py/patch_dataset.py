@@ -28,7 +28,7 @@ class CLPatchDataset(Dataset):
         
         if isinstance(i, slice):
             start = i.start if i.start else 0
-            stop = i.stop if i.stop else len(self.patches)
+            stop = i.stop if i.stop else len(self.X_1)
             step = i.step if i.step else 1
             
             return [(self.X_1[j], self.X_2[j]) for j in range(start, stop, step)]
@@ -85,14 +85,13 @@ class CLPatchDataset(Dataset):
     @staticmethod
     def get_matching_patch_list(patch_list):
         n_samples = len(patch_list)
-        indices = [(i,j) for i in range(n_samples) for j in range(i) if i != j]
 
         x_1 = []
         x_2 = []
 
+        sample_indices = [(k, j) for k in range(n_samples) for j in range(k) if k != j]
+
         for i in range(len(patch_list[0])):
-            #sample_indices = CLPatchDataset.index_sampler(indices, n_samples)
-            sample_indices = [(i,i+1) for i in range(n_samples-1)]
             for index in sample_indices:
                 try:
                     patch_1 = patch_list[index[0]][i]

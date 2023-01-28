@@ -20,18 +20,20 @@ logging.info(f"Running main & importing modules...")
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from torchvision.models.resnet import resnet18, ResNet18_Weights, resnet34, ResNet34_Weights, resnet50, ResNet50_Weights
 
 from patch_dataset import CLPatchDataset
-from byol import WBMapBYOL, MapBYOL
+from byol import MapBYOL
 from simclr import MapSIMCLR
 from cnn import CNN
 
 # --------------------------------------------------- PARSER ---------------------------------------------------
 
 def get_parser():
-    parser = argparse.ArgumentParser(description="PyTorch MNIST Example")
+    parser = argparse.ArgumentParser(description="Self-Supervised Map Embeddings")
+
+    # training params
     parser.add_argument("-b", "--batch-size", type=int, default=50, metavar="N",
                         help="input batch size for training (default: 50)")
     parser.add_argument("-p", "--patch-size", type=int, default=64, metavar="N",
@@ -45,25 +47,35 @@ def get_parser():
     parser.add_argument("-l", "--log-interval", type=int, default=50, metavar="N",
                         help="how many batches to wait before logging "
                              "training status (default: 50)")
+    parser.add_argument("-t", "--train-proportion", type=float, default=0.98, metavar="P",
+                        help="proportion of data to be used for training (default: 0.98)")
+
+    # I/O params
     parser.add_argument("-i", "--input", required=True, help="Path to the "
                                                              "input data for the model to read")
     parser.add_argument("-o", "--output", required=True, help="Path to the "
                                                               "directory to write output to")
-    parser.add_argument("-t", "--byol-ema-tau", type=float, default=0.99, metavar="TAU",
-                        help="tau for BYOL's exponential moving average (default: 0.99)")
-    parser.add_argument("--encoder-layer-idx", type=int, default=-1, metavar="i",
-                        help="index from which to take the output of the encoder (default: -1)")
-    parser.add_argument("--simclr-tau", type=float, default=1.0, metavar="TAU",
-                        help="tau for SimCLRs NTXENT loss (default: 1)")
-    parser.add_argument("-d", "--debug", action='store_true', default=False,
-                        help="disables model running to debug inputs")
+    parser.add_argument("-x", "--experiment-name", required=True, help="name of experiment, to store logs and outputs")
+
+    # model choices
     parser.add_argument("-m", "--use-byol", action='store_true', default=False,
                         help="if present, uses BYOL model, otherwise SimCLR")
-    parser.add_argument("-x", "--experiment-name", help = "name of experiment, to store logs and outputs")
-    parser.add_argument("-r", "--encoder", choices = ["cnn", "resnet18", "resnet34", "resnet50"],
+    parser.add_argument("-r", "--encoder", choices=["cnn", "resnet18", "resnet34", "resnet50"],
                         help="type of encoder to use (out of cnn, resnet18, resnet50)")
-    parser.add_argument("--pretrain-encoder", action = "store_true", default=False,
-                        help = "whether to use pretrained weights in the encoder (only works for ResNet18 or ResNet50)")
+    parser.add_argument("--pretrain-encoder", action="store_true", default=False,
+                        help="whether to use pretrained weights in the encoder (only works for ResNet18 or ResNet50)")
+    parser.add_argument("--encoder-layer-idx", type=int, default=-1, metavar="i",
+                        help="index from which to take the output of the encoder (default: -1)")
+
+    # model hyperparameters
+    parser.add_argument("-t", "--byol-ema-tau", type=float, default=0.99, metavar="TAU",
+                        help="tau for BYOL's exponential moving average (default: 0.99)")
+    parser.add_argument("--simclr-tau", type=float, default=1.0, metavar="TAU",
+                        help="tau for SimCLRs NTXENT loss (default: 1)")
+
+    # debugging
+    parser.add_argument("-d", "--debug", action='store_true', default=False,
+                        help="disables model running to debug inputs")
 
     return parser
 
@@ -73,23 +85,44 @@ def main(args):
 
     torch.manual_seed(args.seed)
 
-    DATASET_DIR = os.path.join(args.input, "patch_dataset.pk")
-    logging.info(f"File at {DATASET_DIR}: {os.path.isfile(DATASET_DIR)}")
+    TRAIN_DATASET_DIR = os.path.join(args.input, "patch_train_dataset.pk")
+    VALIDATION_DATASET_DIR = os.path.join(args.input, "patch_val_dataset.pk")
+    logging.info(f"File at {TRAIN_DATASET_DIR}: {os.path.isfile(TRAIN_DATASET_DIR)}")
 
     # create the DataSet object (or load it if available)
-    if os.path.isfile(DATASET_DIR):
-        with open(DATASET_DIR, "rb") as f:
-            cl_patch_dataset = pk.load(f)
+    if os.path.isfile(TRAIN_DATASET_DIR) and os.path.isfile(VALIDATION_DATASET_DIR):
+        with open(TRAIN_DATASET_DIR, "rb") as f:
+            train_dataset = pk.load(f)
+
+        with open(VALIDATION_DATASET_DIR, "rb") as f:
+            validation_dataset = pk.load(f)
     else:
         cl_patch_dataset = CLPatchDataset.from_dir(map_directory = args.input,
                                                    patch_width = args.patch_size,
                                                    verbose=True)
-        cl_patch_dataset.save(DATASET_DIR)
 
-    logging.info(f"File at {DATASET_DIR}: {os.path.isfile(DATASET_DIR)}")
+        train_size = int(args.train_proportion * len(cl_patch_dataset))
+        val_size = len(cl_patch_dataset) - train_size
+        train_data, val_data = random_split(cl_patch_dataset,
+                                            lengths=[train_size, val_size],
+                                            generator=torch.Generator().manual_seed(args.seed))
+
+        train_X_1 = [cl_patch_dataset.X_1[i] for i in train_data.indices]
+        train_X_2 = [cl_patch_dataset.X_2[i] for i in train_data.indices]
+        val_X_1 = [cl_patch_dataset.X_1[i] for i in val_data.indices]
+        val_X_2 = [cl_patch_dataset.X_2[i] for i in val_data.indices]
+
+        train_dataset = CLPatchDataset(train_X_1, train_X_2)
+        validation_dataset = CLPatchDataset(val_X_1, val_X_2)
+
+        train_dataset.save(TRAIN_DATASET_DIR)
+        validation_dataset.save(TRAIN_DATASET_DIR)
+
+    logging.info(f"File at {TRAIN_DATASET_DIR}: {os.path.isfile(TRAIN_DATASET_DIR)}")
 
     # create the DataLoader object
-    cl_patch_loader = DataLoader(cl_patch_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
+    train_loader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
+    validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
     use_transform = True
     match args.encoder:
@@ -164,14 +197,15 @@ def main(args):
 
     logging.info(f"Using device: {model.device}")
 
-    #torch.cuda.empty_cache()
+    torch.cuda.empty_cache()
 
     # train the model
-    model.train(dataloader = cl_patch_loader,
-                epochs = args.epochs,
-                checkpoint_dir = args.output,
-                transform = model.img_to_resnet if use_transform else None,
-                batch_log_rate = args.log_interval)
+    model.train_model(train_loader = train_loader,
+                      validation_loader = validation_loader,
+                      epochs = args.epochs,
+                      checkpoint_dir = os.path.join(args.output, args.experiment_name),
+                      transform = model.img_to_resnet if use_transform else None,
+                      batch_log_rate = args.log_interval)
 
 # --------------------------------------------------- RUN ---------------------------------------------------
 

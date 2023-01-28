@@ -158,7 +158,7 @@ class MapSIMCLR(nn.Module):
 
                 loss = self.contrastive_loss(z_batch)
 
-                batch_losses.append(loss.cpu())
+                batch_losses.append(loss.cpu().detach())
                 
                 loss.backward()
                 self.optimiser.step()
@@ -185,98 +185,5 @@ class MapSIMCLR(nn.Module):
                                    loss = loss.cpu(),
                                    avg_loss_20 = torch.mean(batch_losses[-20:]),
                                    run_end = datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-
-        return self.checkpoint
-
-class WBMapSIMCLR(MapSIMCLR):
-    """
-    A SIMCLR model with Weights & Biases integration.
-    """
-
-    def __init__(self, encoder, encoder_layer_idx, projector_parameters, tau):
-
-        super(WBMapSIMCLR, self).__init__(encoder, encoder_layer_idx, projector_parameters, tau)
-
-    def train(self, dataloader, epochs, checkpoint_dir=None, transform=None, batch_log_rate=100):
-        """
-        Trains the network.
-        ---------------------------------------------------------------------------------------------------
-        :param dataloader: a PyTorch DataLoader, containing the training data.
-        :param epochs: an int, the number of epochs for training.
-        :param checkpoint_dir: a string, the directory to which to write the checkpoints.
-        :param transform: a transformation function for the inputs, to apply right before passing it to the
-                          network. By default no transformation is applied.
-        :param batch_log_rate: an int. Every batch_log_rate batches, the performance of the network
-                               is logged. By default logging is performed every 100 batches.
-
-        """
-
-        wandb.init(project="honours-project",
-                   name=f"slurm_experiment_{time.strftime('%Y%m%d_%H%M%S')}",
-                   config={
-                       "epochs": epochs,
-                       "batch_size": dataloader.batch_size,
-                       "learning_rate": self.optimiser.param_groups[-1]['lr'],
-                       "architecture": "SIMCLR (RESNET Encoder)"
-                   })
-
-        self.to(self.device)
-
-        for epoch in range(epochs):
-            batch_losses = []
-            for batch, (x_1, x_2) in enumerate(dataloader):
-                # x_1 and x_2 are tensors containing patches,
-                # such that x_1[i] and x_2[i] are patches for the same area
-
-                self.optimiser.zero_grad()
-
-                x_1, x_2 = transform(x_1.to(self.device)), transform(x_2.to(self.device))
-
-                z_1 = self.model(x_1)
-                z_2 = self.model(x_2)
-
-                z_batch = torch.stack((z_1, z_2), dim=1).view(-1, self.OUTPUT_DIM)
-                loss = self.contrastive_loss(z_batch)
-
-                batch_losses.append(loss.cpu())
-
-                loss.backward()
-                self.optimiser.step()
-
-                if batch % (len(dataloader) // batch_log_rate + 1) == 0:
-                    with torch.no_grad():
-                        avg_loss = torch.mean(batch_losses[-20:])
-                        print(f"Epoch {epoch + 1}: [{batch + 1}/{len(dataloader)}] ---- NT-XENT = {avg_loss}")
-
-                        self.update_checkpoint(checkpoint_dir=checkpoint_dir,
-                                               epoch=epoch,
-                                               batch=batch,
-                                               model_state_dict=self.state_dict(),
-                                               optimiser_state_dict=self.optimiser.state_dict,
-                                               loss=loss.cpu(),
-                                               avg_loss_20=avg_loss,
-                                               run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-
-                        metrics = {"BYOL/train_loss": self.checkpoint["loss"],
-                                   "BYOL/avg_20_train_loss": self.checkpoint["avg_loss_20"]}
-
-                        wandb.log(metrics)
-
-        with torch.no_grad():
-            self.update_checkpoint(checkpoint_dir=checkpoint_dir,
-                                   epoch=epochs,
-                                   batch=len(dataloader),
-                                   model_state_dict=self.state_dict(),
-                                   optimiser_state_dict=self.optimiser.state_dict,
-                                   loss=loss.cpu(),
-                                   avg_loss_20=torch.mean(batch_losses[-20:]),
-                                   run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-
-            metrics = {"BYOL/train_loss": self.checkpoint["loss"],
-                       "BYOL/avg_20_train_loss": self.checkpoint["avg_loss_20"]}
-
-            wandb.log(metrics)
-
-        wandb.finish()
 
         return self.checkpoint
