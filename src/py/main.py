@@ -88,6 +88,7 @@ def main(args):
     TRAIN_DATASET_DIR = os.path.join(args.input, f"patch_train_dataset_{args.patch_size}.pk")
     VALIDATION_DATASET_DIR = os.path.join(args.input, f"patch_val_dataset_{args.patch_size}.pk")
     logging.info(f"File at {TRAIN_DATASET_DIR}: {os.path.isfile(TRAIN_DATASET_DIR)}")
+    logging.info(f"File at {VALIDATION_DATASET_DIR}: {os.path.isfile(VALIDATION_DATASET_DIR)}")
 
     # create the DataSet object (or load it if available)
     if os.path.isfile(TRAIN_DATASET_DIR) and os.path.isfile(VALIDATION_DATASET_DIR):
@@ -116,9 +117,10 @@ def main(args):
         validation_dataset = CLPatchDataset(val_X_1, val_X_2)
 
         train_dataset.save(TRAIN_DATASET_DIR)
-        validation_dataset.save(TRAIN_DATASET_DIR)
+        validation_dataset.save(VALIDATION_DATASET_DIR)
 
-    logging.info(f"File at {TRAIN_DATASET_DIR}: {os.path.isfile(TRAIN_DATASET_DIR)}")
+    logging.info(f"Generated training dataset with {len(train_dataset)} samples.")
+    logging.info(f"Generated validation dataset with {len(validation_dataset)} samples.")
 
     # create the DataLoader object
     train_loader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
