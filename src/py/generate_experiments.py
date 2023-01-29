@@ -74,8 +74,8 @@ def main(args):
 
 	# current run
 	# INFO: Using BYOL, but with different patch sizes to see whether it has any effect on learning
-	experiment_argss = [{"--epochs": 5, "--patch-size": 64, "--batch-size" : 50},
-						{"--epochs": 5, "--patch-size": 32, "--batch-size" : 40},
+	experiment_argss = [{"--epochs": 5, "--patch-size": 64, "--batch-size" : 32},
+						{"--epochs": 5, "--patch-size": 32, "--batch-size" : 32},
 						{"--epochs": 5, "--patch-size": 128, "--batch-size" : 32}
 						]
 
