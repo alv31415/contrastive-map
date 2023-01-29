@@ -34,33 +34,33 @@ def get_parser():
     parser = argparse.ArgumentParser(description="Self-Supervised Map Embeddings")
 
     # training params
-    parser.add_argument("-b", "--batch-size", type=int, default=50, metavar="N",
+    parser.add_argument("--batch-size", type=int, default=50, metavar="N",
                         help="input batch size for training (default: 50)")
-    parser.add_argument("-p", "--patch-size", type=int, default=64, metavar="N",
+    parser.add_argument("--patch-size", type=int, default=64, metavar="N",
                         help="size of patches for dataset (default: 64)")
-    parser.add_argument("-e", "--epochs", type=int, default=15, metavar="N",
+    parser.add_argument("--epochs", type=int, default=15, metavar="N",
                         help="number of epochs to train (default: 15)")
     parser.add_argument("--lr", type=float, default=0.001, metavar="LR",
                         help="learning rate (default: 0.001)")
-    parser.add_argument("-s", "--seed", type=int, default=23, metavar="S",
+    parser.add_argument("--seed", type=int, default=23, metavar="S",
                         help="random seed (default: 23)")
-    parser.add_argument("-l", "--log-interval", type=int, default=50, metavar="N",
+    parser.add_argument("--log-interval", type=int, default=50, metavar="N",
                         help="how many batches to wait before logging "
                              "training status (default: 50)")
-    parser.add_argument("-t", "--train-proportion", type=float, default=0.98, metavar="P",
+    parser.add_argument("--train-proportion", type=float, default=0.98, metavar="P",
                         help="proportion of data to be used for training (default: 0.98)")
 
     # I/O params
-    parser.add_argument("-i", "--input", required=True, help="Path to the "
+    parser.add_argument("--input", required=True, help="Path to the "
                                                              "input data for the model to read")
-    parser.add_argument("-o", "--output", required=True, help="Path to the "
+    parser.add_argument("--output", required=True, help="Path to the "
                                                               "directory to write output to")
-    parser.add_argument("-x", "--experiment-name", required=True, help="name of experiment, to store logs and outputs")
+    parser.add_argument("--experiment-name", required=True, help="name of experiment, to store logs and outputs")
 
     # model choices
-    parser.add_argument("-m", "--use-byol", action='store_true', default=False,
+    parser.add_argument("--use-byol", action='store_true', default=False,
                         help="if present, uses BYOL model, otherwise SimCLR")
-    parser.add_argument("-r", "--encoder", choices=["cnn", "resnet18", "resnet34", "resnet50"],
+    parser.add_argument("--encoder", choices=["cnn", "resnet18", "resnet34", "resnet50"],
                         help="type of encoder to use (out of cnn, resnet18, resnet50)")
     parser.add_argument("--pretrain-encoder", action="store_true", default=False,
                         help="whether to use pretrained weights in the encoder (only works for ResNet18 or ResNet50)")
@@ -68,13 +68,13 @@ def get_parser():
                         help="index from which to take the output of the encoder (default: -1)")
 
     # model hyperparameters
-    parser.add_argument("-t", "--byol-ema-tau", type=float, default=0.99, metavar="TAU",
+    parser.add_argument("--byol-ema-tau", type=float, default=0.99, metavar="TAU",
                         help="tau for BYOL's exponential moving average (default: 0.99)")
     parser.add_argument("--simclr-tau", type=float, default=1.0, metavar="TAU",
                         help="tau for SimCLRs NTXENT loss (default: 1)")
 
     # debugging
-    parser.add_argument("-d", "--debug", action='store_true', default=False,
+    parser.add_argument("--debug", action='store_true', default=False,
                         help="disables model running to debug inputs")
 
     return parser
