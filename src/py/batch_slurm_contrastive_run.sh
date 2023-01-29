@@ -17,13 +17,8 @@ STUDENT_ID=$(whoami)
 # make available all commands
 source /home/${STUDENT_ID}/.bashrc
 
-echo "________________________________________"
-
-echo "Using W&B API key: ${WANDB_API_KEY}"
-echo "Running W&B in ${WANDB_MODE} mode"
-
 # make script bail out after first error
-# set -e
+set -e
 
 echo "________________________________________"
 
@@ -32,6 +27,16 @@ HOME_DIR=/home/${STUDENT_ID}/honours-project
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
 DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals
+EXPERIMENT_FILE=${EXPERIMENT_DIR}/experiments.txt
+
+if [ -f "${EXPERIMENT_FILE}" ]; then
+    echo "${EXPERIMENT_FILE} found."
+else
+	echo "${EXPERIMENT_FILE} wasn't found. Run generate_experiments.txt!"
+	exit
+fi
+
+echo "________________________________________"
 
 # activate the virtual environment
 echo "Activating virtual environment at ${HOME_DIR}/henv/bin/activate"
@@ -54,9 +59,6 @@ mkdir -p ${SCRATCH_OUT_DIR}
 mkdir -p ${EXPERIMENT_OUT_DIR}
 mkdir -p ${SLURM_OUT_DIR}
 
-# see if anything is in out directory
-ls ${SCRATCH_OUT_DIR}
-
 echo "________________________________________"
 
 # transfer the data file to scratch
@@ -66,27 +68,16 @@ rsync --archive --update --compress --progress ${DATA_DIR}/ ${SCRATCH_DATA_DIR}
 echo "________________________________________"
 
 # run code
-echo "Running main.py in ${EXPERIMENT_DIR}"
-python ${EXPERIMENT_DIR}/main.py --batch-size 16 \
-								 --patch-size 64 \
-								 --epochs 1 \
-								 --seed 23 \
-								 --log-interval 1000 \
-								 --train-proportion 0.98 \
-								 --input "${SCRATCH_DATA_DIR}" \
-								 --output "${SCRATCH_OUT_DIR}" \
-								 --experiment-name "b-r18-e1-b64-t0_99-p64" \
-								 --use-byol \
-								 --encoder "resnet18" \
-								 --pretrain-encoder \
-								 --encoder-layer-idx -2 \
-								 --byol-ema-tau 0.99 \
-								 --simclr-tau 0.99 \
+echo "Running main.py according to experiments from ${EXPERIMENT_FILE}"
+COMMAND="`sed \"${SLURM_ARRAY_TASK_ID}q;d\" ${EXPERIMENT_FILE}`"
+echo "Running provided command: ${COMMAND}"
+eval "${COMMAND}"
+echo "Command ran succesfully."
 
 echo "________________________________________"
 
 
-# transfer the data file from scratch
+# transfer the output file from scratch
 echo "Transferring files from ${SCRATCH_OUT_DIR} to ${EXPERIMENT_OUT_DIR}"
 rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
 

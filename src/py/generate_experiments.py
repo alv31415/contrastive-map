@@ -72,6 +72,15 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, experiment_a
 
 def main(args):
 
+	# current run
+	# INFO: Using BYOL, but with different patch sizes to see whether it has any effect on learning
+	experiment_argss = [{"--epochs": 5, "--patch-size": 64},
+						{"--epochs": 5, "--patch-size": 32},
+						{"--epochs": 5, "--patch-size": 128}
+						]
+
+	# previous runs
+	"""
 	experiment_argss = [{"--epochs" : 5},
 						{"--epochs": 5, "--use-byol" : False, "--encoder-layer-idx": -1},
 						{"--epochs": 5, "--patch-size": 32},
@@ -82,8 +91,11 @@ def main(args):
 						{"--epochs": 5, "--encoder": "resnet34"},
 						{"--epochs": 5, "--byol-ema-tau": 0.95},
 						{"--epochs": 5, "--byol-ema-tau": 0.9},
-						{"--epochs": 5, "--byol-ema-tau": 0.8},
+						{"--epochs": 5, "--byol-ema-tau": 0.8}
 						]
+	"""
+
+
 
 	experiment_run_args = [create_experiment(main_file = args.main,
 											 scratch_data_dir = args.scratch_data_dir,
