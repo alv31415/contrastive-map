@@ -85,8 +85,8 @@ def main(args):
 
     torch.manual_seed(args.seed)
 
-    TRAIN_DATASET_DIR = os.path.join(args.input, "patch_train_dataset.pk")
-    VALIDATION_DATASET_DIR = os.path.join(args.input, "patch_val_dataset.pk")
+    TRAIN_DATASET_DIR = os.path.join(args.input, f"patch_train_dataset_{args.patch_size}.pk")
+    VALIDATION_DATASET_DIR = os.path.join(args.input, f"patch_val_dataset_{args.patch_size}.pk")
     logging.info(f"File at {TRAIN_DATASET_DIR}: {os.path.isfile(TRAIN_DATASET_DIR)}")
 
     # create the DataSet object (or load it if available)

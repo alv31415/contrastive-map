@@ -199,6 +199,10 @@ class MapBYOL(nn.Module):
                 self.checkpoint[k] = v
 
         if checkpoint_dir is not None:
+
+            if not os.path.isdir(checkpoint_dir):
+                os.makedirs(checkpoint_dir)
+
             model_params_dir = os.path.join(checkpoint_dir, "byol_checkpoint.pt")
             torch.save(self.checkpoint, model_params_dir)
 
