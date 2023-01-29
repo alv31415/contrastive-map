@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
-#SBATCH --time=1-04:00:00
+#SBATCH --time=1-08:00:00
 #SBATCH --partition=Teach-LongJobs
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
@@ -58,6 +58,8 @@ mkdir -p ${SCRATCH_DATA_DIR}
 mkdir -p ${SCRATCH_OUT_DIR}
 mkdir -p ${EXPERIMENT_OUT_DIR}
 mkdir -p ${SLURM_OUT_DIR}
+
+rm -rf ${SCRATCH_DATA_DIR}/patch_dataset.pk ||:
 
 echo "________________________________________"
 
