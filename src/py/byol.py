@@ -221,7 +221,7 @@ class MapBYOL(nn.Module):
 
         for x_1, x_2 in validation_loader:
             x_1, x_2 = transform(x_1.to(self.device)), transform(x_2.to(self.device))
-            val_losses.append(self.get_loss(x_1, x_2))
+            val_losses.append(self.get_loss(x_1, x_2).cpu())
 
         self.train()
 
