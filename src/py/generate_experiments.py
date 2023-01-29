@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 
 def get_parser():
 	parser = argparse.ArgumentParser(description="Generate experiments for SLURM jobs")
@@ -49,17 +50,17 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, experiment_a
 		else:
 			raise ValueError(f"The provided argument {arg} isn't a valid experiment argument.")
 
-	arg_dict["--experiment_name"] = get_experiment_name(use_byol = arg_dict["--use-byol"],
+	arg_dict["--experiment-name"] = get_experiment_name(use_byol = arg_dict.get("--use-byol", False),
 														encoder = arg_dict["--encoder"],
 														epochs = arg_dict["--epochs"],
-														batch_size = arg_dict["--batch_size"],
-														tau = arg_dict["--byol-ema-tau" if arg_dict["--use-byol"] else "--simclr-tau"],
-														patch_size = arg_dict["--patch_size"],
+														batch_size = arg_dict["--batch-size"],
+														tau = arg_dict["--byol-ema-tau" if arg_dict.get("--use-byol", False) else "--simclr-tau"],
+														patch_size = arg_dict["--patch-size"],
 														pretrained = arg_dict.get("--pretrain-encoder", False))
 
 	python_call = f"python {main_file}"
 
-	for arg, value in arg_dict:
+	for arg, value in arg_dict.items():
 		if type(value) == str:
 			python_call += f' {arg} "{value}"'
 		elif type(value) == bool:
@@ -72,24 +73,32 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, experiment_a
 def main(args):
 
 	experiment_argss = [{"--epochs" : 5},
-						{"--epochs": 5, "--use-byol" : False},
+						{"--epochs": 5, "--use-byol" : False, "--encoder-layer-idx": -1},
 						{"--epochs": 5, "--patch-size": 32},
 						{"--epochs": 5, "--patch-size": 128},
 						{"--epochs": 5, "--pretrain-encoder": False},
 						{"--epochs": 5, "--pretrain-encoder": False, "--encoder": "resnet34"},
+						{"--epochs": 5, "--pretrain-encoder": False, "--encoder": "cnn", "--encoder-layer-idx" : -1},
 						{"--epochs": 5, "--encoder": "resnet34"},
 						{"--epochs": 5, "--byol-ema-tau": 0.95},
 						{"--epochs": 5, "--byol-ema-tau": 0.9},
 						{"--epochs": 5, "--byol-ema-tau": 0.8},
 						]
+
 	experiment_run_args = [create_experiment(main_file = args.main,
 											 scratch_data_dir = args.scratch_data_dir,
 											 scratch_out_dir = args.scratch_out_dir,
-											 experiment_args = experiment_args)
+											 experiment_args = experiment_args) + "\n"
 						   for experiment_args in experiment_argss]
 
-	with open("experiments.txt", "w") as f:
+	with open("experiments.txt", "w+") as f:
 		f.writelines(experiment_run_args)
+
+	with open("ran_experiments.txt", "a+") as f:
+		f.write("\n")
+		f.write("="*20 + datetime.now().strftime("%d/%m/%Y %H:%M:%S") + "="*20 + "\n")
+		f.writelines(experiment_run_args)
+		f.write("=" * 60)
 
 
 if __name__ == "__main__":
