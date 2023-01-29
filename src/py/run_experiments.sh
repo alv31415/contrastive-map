@@ -21,6 +21,8 @@ python ${GEN_EXPERIMENT_FILE} --main ${MAIN_FILE} \
 N_EXPERIMENTS=$(cat ${EXPERIMENT_FILE} | wc -l) 
 MAX_PARALLEL_JOBS=12
 
+echo "${N_EXPERIMENTS} found. Running with maximum ${MAX_PARALLEL_JOBS} parallel jobs."
+
 # run sbatch job
 echo "Running batch job: sbatch --array=1-${N_EXPERIMENTS}%${MAX_PARALLEL_JOBS} ${SLURM_RUN_FILE} ${EXPERIMENT_FILE}"
 sbatch --array=1-${N_EXPERIMENTS}%${MAX_PARALLEL_JOBS} ${SLURM_RUN_FILE}
