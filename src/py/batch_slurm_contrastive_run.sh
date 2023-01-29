@@ -59,7 +59,7 @@ mkdir -p ${SCRATCH_OUT_DIR}
 mkdir -p ${EXPERIMENT_OUT_DIR}
 mkdir -p ${SLURM_OUT_DIR}
 
-rm -rf ${SCRATCH_DATA_DIR}/patch_dataset.pk ||:
+rm -rf ${SCRATCH_DATA_DIR}/*.pk ||:
 
 echo "________________________________________"
 
