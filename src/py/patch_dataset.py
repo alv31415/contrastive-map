@@ -108,7 +108,7 @@ class CLPatchDataset(Dataset):
 
         if len(n_patches) != 1:
             logging.error(f"Found different patch list lengths: {n_patches}. Patches won't be added to the dataset.")
-            return x_1, x_2
+            return x_1, x_2, n_removed_patches
 
         for i in range(len(patch_list[0])):
             for index in sample_indices:
