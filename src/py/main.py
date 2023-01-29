@@ -125,52 +125,51 @@ def main(args):
     validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
     use_transform = True
-    match args.encoder:
-        case "cnn":
-            use_transform = False
-            projector_parameters = {"input_dim": 512,
-                                    "hidden_dim": 2048,
-                                    "output_dim": 256,
-                                    "activation": nn.ReLU(),
-                                    "use_bias": True,
-                                    "use_batch_norm": True}
-            encoder = CNN(input_dim = args.patch_size, in_channels = 3, output_dim = 512, use_bias = True, use_batch_norm = True)
-        case "resnet34":
-            projector_parameters = {"input_dim": 512,
-                                    "hidden_dim": 2048,
-                                    "output_dim": 256,
-                                    "activation": nn.ReLU(),
-                                    "use_bias": True,
-                                    "use_batch_norm": True}
+    if args.encoder == "cnn":
+        use_transform = False
+        projector_parameters = {"input_dim": 512,
+                                "hidden_dim": 2048,
+                                "output_dim": 256,
+                                "activation": nn.ReLU(),
+                                "use_bias": True,
+                                "use_batch_norm": True}
+        encoder = CNN(input_dim = args.patch_size, in_channels = 3, output_dim = 512, use_bias = True, use_batch_norm = True)
+    elif args.encoder == "resnet34":
+        projector_parameters = {"input_dim": 512,
+                                "hidden_dim": 2048,
+                                "output_dim": 256,
+                                "activation": nn.ReLU(),
+                                "use_bias": True,
+                                "use_batch_norm": True}
 
-            if args.pretrain_encoder:
-                encoder = resnet34(weights = ResNet34_Weights.DEFAULT)
-            else:
-                encoder = resnet34()
-        case "resnet50":
-            projector_parameters = {"input_dim": 2048,
-                                    "hidden_dim": 4096,
-                                    "output_dim": 256,
-                                    "activation": nn.ReLU(),
-                                    "use_bias": True,
-                                    "use_batch_norm": True}
+        if args.pretrain_encoder:
+            encoder = resnet34(weights = ResNet34_Weights.DEFAULT)
+        else:
+            encoder = resnet34()
+    elif args.encoder == "resnet50":
+        projector_parameters = {"input_dim": 2048,
+                                "hidden_dim": 4096,
+                                "output_dim": 256,
+                                "activation": nn.ReLU(),
+                                "use_bias": True,
+                                "use_batch_norm": True}
 
-            if args.pretrain_encoder:
-                encoder = resnet50(weights = ResNet50_Weights.DEFAULT)
-            else:
-                encoder = resnet50()
-        case _:
-            projector_parameters = {"input_dim": 512,
-                                   "hidden_dim": 2048,
-                                   "output_dim": 256,
-                                   "activation": nn.ReLU(),
-                                   "use_bias": True,
-                                   "use_batch_norm": True}
+        if args.pretrain_encoder:
+            encoder = resnet50(weights = ResNet50_Weights.DEFAULT)
+        else:
+            encoder = resnet50()
+    else:
+        projector_parameters = {"input_dim": 512,
+                               "hidden_dim": 2048,
+                               "output_dim": 256,
+                               "activation": nn.ReLU(),
+                               "use_bias": True,
+                               "use_batch_norm": True}
 
-            if args.pretrain_encoder:
-                encoder = resnet18(weights = ResNet18_Weights.DEFAULT)
-            else:
-                encoder = resnet18()
+        if args.pretrain_encoder:
+            encoder = resnet18(weights = ResNet18_Weights.DEFAULT)
+        else:
+            encoder = resnet18()
 
     logging.info(f"Using encoder {args.encoder} with pretrained weights = {args.pretrain_encoder}")
 
