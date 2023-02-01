@@ -20,7 +20,7 @@ class CLPatchDataset(Dataset):
     def __init__(self, X_1, X_2, removed_patches = None):
         self.X_1 = X_1
         self.X_2 = X_2
-        self.removed_patches = []
+        self.removed_patches = removed_patches
 
     def __len__(self):
         return len(self.X_1)
