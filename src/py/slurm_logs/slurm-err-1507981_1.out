@@ -1,0 +1,95 @@
+29-01-2023 21:22:11 INFO Running main & importing modules...
+29-01-2023 21:22:35 INFO Parsed arguments: Namespace(batch_size=32, byol_ema_tau=0.99, debug=False, encoder='resnet18', encoder_layer_idx=-1, epochs=5, experiment_name='s-presnet18-e5-b32-t0_99-p64', input='/disk/scratch_big/s1908368/data', log_interval=1000, lr=0.001, output='/disk/scratch_big/s1908368/output', patch_size=64, pretrain_encoder=True, seed=23, simclr_tau=0.99, train_proportion=0.98, use_byol=False)
+29-01-2023 21:22:35 INFO File at /disk/scratch_big/s1908368/data/patch_train_dataset_64.pk: False
+29-01-2023 21:22:35 INFO File at /disk/scratch_big/s1908368/data/patch_val_dataset_64.pk: False
+29-01-2023 21:22:35 INFO Directories found: ['1', '10', '12', '13', '14', '15', '16', '17', '18', '19', '2', '20', '21', '22', '23', '24', '25', '26', '29', '3', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '4', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '5', '50', '51', '52', '53', '54', '55', '56', '57', '6', '7', '8', '9']
+29-01-2023 21:22:35 INFO Files in first directory: ['82877289.png', '82877292.png', '82877286.png']
+29-01-2023 21:22:35 INFO Fetching patches from folder: 51
+29-01-2023 21:22:39 INFO Fetching patches from folder: 52
+29-01-2023 21:22:43 INFO Fetching patches from folder: 19
+29-01-2023 21:22:53 INFO Fetching patches from folder: 32
+29-01-2023 21:23:02 INFO Fetching patches from folder: 33
+29-01-2023 21:23:12 INFO Fetching patches from folder: 18
+29-01-2023 21:23:22 INFO Fetching patches from folder: 4
+29-01-2023 21:23:30 INFO Fetching patches from folder: 1
+29-01-2023 21:23:39 INFO Fetching patches from folder: 14
+29-01-2023 21:23:47 INFO Fetching patches from folder: 2
+29-01-2023 21:23:54 INFO Fetching patches from folder: 36
+29-01-2023 21:24:02 INFO Fetching patches from folder: 39
+29-01-2023 21:24:11 INFO Fetching patches from folder: 38
+29-01-2023 21:24:19 INFO Fetching patches from folder: 46
+29-01-2023 21:24:24 INFO Fetching patches from folder: 3
+29-01-2023 21:24:31 INFO Fetching patches from folder: 41
+29-01-2023 21:24:35 INFO Fetching patches from folder: 53
+29-01-2023 21:24:39 INFO Fetching patches from folder: 40
+29-01-2023 21:24:45 INFO Fetching patches from folder: 13
+29-01-2023 21:24:52 INFO Fetching patches from folder: 5
+29-01-2023 21:24:59 INFO Fetching patches from folder: 47
+29-01-2023 21:25:04 INFO Fetching patches from folder: 25
+29-01-2023 21:25:16 INFO Fetching patches from folder: 7
+29-01-2023 21:25:25 INFO Fetching patches from folder: 48
+29-01-2023 21:25:27 INFO Fetching patches from folder: 50
+29-01-2023 21:25:31 INFO Fetching patches from folder: 26
+29-01-2023 21:25:42 INFO Fetching patches from folder: 9
+29-01-2023 21:25:50 INFO Fetching patches from folder: 12
+29-01-2023 21:25:55 INFO Fetching patches from folder: 49
+29-01-2023 21:25:58 INFO Fetching patches from folder: 15
+29-01-2023 21:26:07 INFO Fetching patches from folder: 42
+29-01-2023 21:26:11 INFO Fetching patches from folder: 43
+29-01-2023 21:26:16 INFO Fetching patches from folder: 45
+29-01-2023 21:26:20 INFO Fetching patches from folder: 22
+29-01-2023 21:26:28 INFO Fetching patches from folder: 16
+29-01-2023 21:26:40 INFO Fetching patches from folder: 55
+29-01-2023 21:26:45 INFO Fetching patches from folder: 30
+29-01-2023 21:26:54 INFO Fetching patches from folder: 6
+29-01-2023 21:27:00 INFO Fetching patches from folder: 35
+29-01-2023 21:27:08 INFO Fetching patches from folder: 8
+29-01-2023 21:27:16 INFO Fetching patches from folder: 17
+29-01-2023 21:27:27 INFO Fetching patches from folder: 37
+29-01-2023 21:27:34 INFO Fetching patches from folder: 34
+29-01-2023 21:27:42 INFO Fetching patches from folder: 10
+29-01-2023 21:27:52 INFO Fetching patches from folder: 24
+29-01-2023 21:28:05 INFO Fetching patches from folder: 56
+29-01-2023 21:28:08 INFO Fetching patches from folder: 31
+29-01-2023 21:28:17 INFO Fetching patches from folder: 23
+29-01-2023 21:28:27 INFO Fetching patches from folder: 54
+29-01-2023 21:28:32 INFO Fetching patches from folder: 57
+29-01-2023 21:28:34 INFO Fetching patches from folder: 20
+29-01-2023 21:28:38 INFO Fetching patches from folder: 29
+29-01-2023 21:28:46 INFO Fetching patches from folder: 21
+29-01-2023 21:28:54 INFO Fetching patches from folder: 44
+29-01-2023 21:28:58 INFO Generated 357207 positive pairs, after removing 264063 positive pairs.
+29-01-2023 21:29:52 INFO Generated training dataset with 350062 samples.
+29-01-2023 21:29:52 INFO Generated validation dataset with 7145 samples.
+29-01-2023 21:29:54 INFO Using encoder resnet18 with pretrained weights = True
+29-01-2023 21:29:54 INFO Using SimCLR with tau = 0.99, with encoder layer index = -1
+29-01-2023 21:29:54 INFO Using device: cuda
+29-01-2023 21:30:09 INFO Starting Epoch: 1
+Traceback (most recent call last):
+  File "/home/s1908368/honours-project/contrastive-map/src/py/main.py", line 223, in <module>
+    main(args)
+  File "/home/s1908368/honours-project/contrastive-map/src/py/main.py", line 209, in main
+    model.train_model(train_loader = train_loader,
+  File "/home/s1908368/honours-project/contrastive-map/src/py/simclr.py", line 207, in train_model
+    loss = self.get_loss(x_1, x_2)
+  File "/home/s1908368/honours-project/contrastive-map/src/py/simclr.py", line 143, in get_loss
+    z_1 = self.model(x_1)
+  File "/home/s1908368/honours-project/henv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/s1908368/honours-project/contrastive-map/src/py/encoder_projector_nn.py", line 62, in forward
+    return self.project(encode_x)
+  File "/home/s1908368/honours-project/contrastive-map/src/py/encoder_projector_nn.py", line 55, in project
+    return self.projector(x)
+  File "/home/s1908368/honours-project/henv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/s1908368/honours-project/contrastive-map/src/py/mlp.py", line 40, in forward
+    return self.mlp(x)
+  File "/home/s1908368/honours-project/henv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/s1908368/honours-project/henv/lib/python3.8/site-packages/torch/nn/modules/container.py", line 139, in forward
+    input = module(input)
+  File "/home/s1908368/honours-project/henv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/s1908368/honours-project/henv/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 114, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x1000 and 512x2048)
