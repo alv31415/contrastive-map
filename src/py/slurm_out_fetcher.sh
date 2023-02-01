@@ -2,8 +2,8 @@
 
 #SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-fetch-%A_%a.out
 #SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-fetch-err-%A_%a.out
-#SBATCH --nodes=3
-#SBATCH --nodelist=landonia[21-23]
+#SBATCH --nodes=4
+#SBATCH --nodelist=landonia[21-24]
 #SBATCH --gres=gpu:1
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
