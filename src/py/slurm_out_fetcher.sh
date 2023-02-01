@@ -7,7 +7,7 @@
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-02:30:00
-#SBATCH --partition=Teach-Short
+#SBATCH --partition=Teach-LongJobs
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Fetching job starting at ${START} on ${SLURM_JOB_NODELIST}"
@@ -51,7 +51,7 @@ echo "________________________________________"
 # transfer the output file from scratch
 echo "Transferring files from ${SCRATCH_OUT_DIR} to ${EXPERIMENT_OUT_DIR}"
 rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
-rsync --archive --update --compress --progress ${SCRATCH_DATA_DIR}/patch_dataset.pk ${EXPERIMENT_OUT_DIR}
+rsync --archive --update --compress --progress ${SCRATCH_DATA_DIR}/*.pk ${EXPERIMENT_OUT_DIR}
 
 echo "________________________________________"
 

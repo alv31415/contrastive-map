@@ -1,0 +1,18 @@
+29-01-2023 21:30:20 INFO Running main & importing modules...
+29-01-2023 21:30:39 INFO Parsed arguments: Namespace(batch_size=32, byol_ema_tau=0.99, debug=False, encoder='cnn', encoder_layer_idx=-1, epochs=5, experiment_name='b-cnn-e5-b32-t0_99-p64', input='/disk/scratch_big/s1908368/data', log_interval=1000, lr=0.001, output='/disk/scratch_big/s1908368/output', patch_size=64, pretrain_encoder=False, seed=23, simclr_tau=0.99, train_proportion=0.98, use_byol=True)
+29-01-2023 21:30:39 INFO File at /disk/scratch_big/s1908368/data/patch_train_dataset_64.pk: True
+29-01-2023 21:30:39 INFO File at /disk/scratch_big/s1908368/data/patch_val_dataset_64.pk: True
+29-01-2023 21:30:47 INFO Generated training dataset with 350062 samples.
+29-01-2023 21:30:47 INFO Generated validation dataset with 7145 samples.
+29-01-2023 21:30:47 INFO Using encoder cnn with pretrained weights = False
+29-01-2023 21:30:48 INFO Using BYOL with tau = 0.99, with encoder layer index = -1
+29-01-2023 21:30:48 INFO Using device: cuda
+29-01-2023 21:30:51 INFO Starting Epoch: 1
+Traceback (most recent call last):
+  File "/home/s1908368/honours-project/contrastive-map/src/py/main.py", line 223, in <module>
+    main(args)
+  File "/home/s1908368/honours-project/contrastive-map/src/py/main.py", line 209, in main
+    model.train_model(train_loader = train_loader,
+  File "/home/s1908368/honours-project/contrastive-map/src/py/byol.py", line 257, in train_model
+    x_1, x_2 = transform(x_1.to(self.device)), transform(x_2.to(self.device))
+TypeError: 'NoneType' object is not callable

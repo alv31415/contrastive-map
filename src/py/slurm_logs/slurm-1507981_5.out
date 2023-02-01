@@ -1,0 +1,13 @@
+Job starting at 29/01/2023 21:30:57 on landonia21
+________________________________________
+/home/s1908368/honours-project/contrastive-map/src/py/experiments.txt found.
+________________________________________
+Activating virtual environment at /home/s1908368/honours-project/henv/bin/activate
+________________________________________
+Creating directory in scratch disk: /disk/scratch_big/s1908368
+________________________________________
+Transferring files from /home/s1908368/honours-project/contrastive-map/src/data/originals to /disk/scratch_big/s1908368/data
+sending incremental file list
+________________________________________
+Running main.py according to experiments from /home/s1908368/honours-project/contrastive-map/src/py/experiments.txt
+Running provided command: python /home/s1908368/honours-project/contrastive-map/src/py/main.py --batch-size 32 --patch-size 64 --epochs 5 --seed 23 --log-interval 1000 --train-proportion 0.98 --input "/disk/scratch_big/s1908368/data" --output "/disk/scratch_big/s1908368/output" --experiment-name "b-presnet34-e5-b32-t0_99-p64" --use-byol --encoder "resnet34" --pretrain-encoder --encoder-layer-idx -2 --byol-ema-tau 0.99 --simclr-tau 0.99

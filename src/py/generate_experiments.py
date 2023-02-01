@@ -19,7 +19,7 @@ def get_experiment_name(use_byol, encoder, epochs, batch_size, tau, patch_size, 
 
 def get_default_arg_dict(scratch_data_dir, scratch_out_dir):
 	return {
-	"--batch-size" : 16,
+	"--batch-size" : 32,
 	"--patch-size" : 64,
 	"--epochs" : 1,
 	"--seed" : 23,
@@ -74,17 +74,14 @@ def main(args):
 
 	# current run
 	# INFO: Using BYOL, but with different patch sizes to see whether it has any effect on learning
-	experiment_argss = [{"--epochs": 5, "--patch-size": 64, "--batch-size" : 32},
+	"""
+        experiment_argss = [{"--epochs": 5, "--patch-size": 64, "--batch-size" : 32},
 						{"--epochs": 5, "--patch-size": 32, "--batch-size" : 32},
 						{"--epochs": 5, "--patch-size": 128, "--batch-size" : 32}
 						]
-
+        """
 	# previous runs
-	"""
-	experiment_argss = [{"--epochs" : 5},
-						{"--epochs": 5, "--use-byol" : False, "--encoder-layer-idx": -1},
-						{"--epochs": 5, "--patch-size": 32},
-						{"--epochs": 5, "--patch-size": 128},
+	experiment_argss = [{"--epochs": 5, "--use-byol" : False, "--encoder-layer-idx": -1},
 						{"--epochs": 5, "--pretrain-encoder": False},
 						{"--epochs": 5, "--pretrain-encoder": False, "--encoder": "resnet34"},
 						{"--epochs": 5, "--pretrain-encoder": False, "--encoder": "cnn", "--encoder-layer-idx" : -1},
@@ -93,7 +90,6 @@ def main(args):
 						{"--epochs": 5, "--byol-ema-tau": 0.9},
 						{"--epochs": 5, "--byol-ema-tau": 0.8}
 						]
-	"""
 
 
 
