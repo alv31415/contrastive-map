@@ -19,7 +19,7 @@ def get_experiment_name(use_byol, encoder, epochs, batch_size, tau, patch_size, 
 
 def get_default_arg_dict(scratch_data_dir, scratch_out_dir):
 	return {
-	"--batch-size" : 16,
+	"--batch-size" : 32,
 	"--patch-size" : 64,
 	"--epochs" : 1,
 	"--seed" : 23,
