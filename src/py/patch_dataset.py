@@ -107,14 +107,14 @@ class CLPatchDataset(Dataset):
 
         x_1 = []
         x_2 = []
+        removed_patches = []
 
         sample_indices = [(k, j) for k in range(n_samples) for j in range(k) if k != j]
         n_patches = set([len(patch_list[i]) for i in range(n_samples)])
-        removed_patches = []
 
         if len(n_patches) != 1:
             logging.error(f"Found different patch list lengths: {n_patches}. Patches won't be added to the dataset.")
-            return x_1, x_2, len(removed_patches)
+            return x_1, x_2, removed_patches
 
         for i in range(len(patch_list[0])):
             for index in sample_indices:
@@ -126,11 +126,11 @@ class CLPatchDataset(Dataset):
                         x_1.append(patch_1)
                         x_2.append(patch_2)
                     else:
-                        if x_1 not in removed_patches:
-                            removed_patches.append(x_1)
+                        if patch_1 not in removed_patches:
+                            removed_patches.append(patch_1)
 
-                        if x_2 not in removed_patches:
-                            removed_patches.append(x_2)
+                        if patch_2 not in removed_patches:
+                            removed_patches.append(patch_2)
 
                 except IndexError:
                     logging.error(
