@@ -28,6 +28,11 @@ class MapSIMCLR(nn.Module):
         tau: temperature parameter for NT-XENT loss
         """
         super(MapSIMCLR, self).__init__()
+
+        self.kwargs = {"encoder": encoder,
+                       "encoder_layer_idx": encoder_layer_idx,
+                       "projector_parameters": projector_parameters,
+                       "tau": tau}
         
         # model constants
         self.MAX_PIXEL_VALUE = 255
@@ -56,7 +61,8 @@ class MapSIMCLR(nn.Module):
                            "batch_losses": [],
                            "validation_losses ": [],
                            "run_start": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                           "run_end": None}
+                           "run_end": None,
+                           "model_kwargs": self.kwargs}
     
     def img_to_resnet(self, img, dim = None):
         """

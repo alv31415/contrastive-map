@@ -61,6 +61,12 @@ class MapBYOL(nn.Module):
         """
         super(MapBYOL, self).__init__()
 
+        self.kwargs = {"encoder" : encoder,
+                       "encoder_layer_idx" : encoder_layer_idx,
+                       "projector_parameters" : projector_parameters,
+                       "predictor_parameters" : predictor_parameters,
+                       "ema_tau" : ema_tau}
+
         # model constants
         self.MAX_PIXEL_VALUE = 255
         self.RESNET_DIM = 224
@@ -92,7 +98,8 @@ class MapBYOL(nn.Module):
                            "batch_losses": [],
                            "validation_losses ": [],
                            "run_start": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                           "run_end": None}
+                           "run_end": None,
+                           "model_kwargs": self.kwargs}
 
     @torch.no_grad()
     def update_target_network(self):
