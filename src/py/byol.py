@@ -245,6 +245,11 @@ class MapBYOL(nn.Module):
 
         self.to(self.device)
 
+        if transform is None:
+            transform_inputs = lambda x: x
+        else:
+            transform_inputs = transform
+
         for epoch in range(epochs):
             batch_losses = []
             validation_losses = []
@@ -254,7 +259,7 @@ class MapBYOL(nn.Module):
                 # such that x_1[i] and x_2[i] are patches for the same area
                 self.optimiser.zero_grad()
 
-                x_1, x_2 = transform(x_1.to(self.device)), transform(x_2.to(self.device))
+                x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
 
                 loss = self.get_loss(x_1, x_2)
 

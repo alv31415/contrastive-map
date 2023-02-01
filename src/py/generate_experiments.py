@@ -81,7 +81,7 @@ def main(args):
 						]
         """
 	# previous runs
-	experiment_argss = [{"--epochs": 5, "--use-byol" : False, "--encoder-layer-idx": -1},
+	experiment_argss = [{"--epochs": 5, "--use-byol" : False, "--encoder-layer-idx": -2},
 						{"--epochs": 5, "--pretrain-encoder": False},
 						{"--epochs": 5, "--pretrain-encoder": False, "--encoder": "resnet34"},
 						{"--epochs": 5, "--pretrain-encoder": False, "--encoder": "cnn", "--encoder-layer-idx" : -1},
