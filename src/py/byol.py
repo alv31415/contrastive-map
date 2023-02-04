@@ -94,7 +94,7 @@ class MapBYOL(nn.Module):
                            "model_state_dict": self.state_dict(),
                            "optimiser_state_dict": None,
                            "loss": 0,
-                           "avg_loss_20": 0,
+                           "avg_batch_losses_20": [],
                            "batch_losses": [],
                            "validation_losses ": [],
                            "run_start": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -197,7 +197,7 @@ class MapBYOL(nn.Module):
         # average the loss over the batch
         return (loss_1 + loss_2).mean()
 
-    def update_checkpoint(self, checkpoint_dir, batch_losses, **checkpoint_data):
+    def update_checkpoint(self, checkpoint_dir, batch_losses, validation_losses, **checkpoint_data):
         """
         Updates the checkpoint dictionary.
         """
@@ -213,9 +213,15 @@ class MapBYOL(nn.Module):
             model_params_dir = os.path.join(checkpoint_dir, "byol_checkpoint.pt")
             torch.save(self.checkpoint, model_params_dir)
 
-            batch_loss_dir = os.path.join(checkpoint_dir, f"batch_loss_logs_{checkpoint_data.get('epoch', 0)}.pk")
-            with open(batch_loss_dir, "wb") as f:
+            batch_loss_train_dir = os.path.join(checkpoint_dir,
+                                                f"batch_loss_logs_t{checkpoint_data.get('epoch', 0)}.pk")
+            with open(batch_loss_train_dir, "wb") as f:
                 pk.dump(batch_losses, f)
+
+            batch_loss_validation_dir = os.path.join(checkpoint_dir,
+                                                     f"batch_loss_logs_v{checkpoint_data.get('epoch', 0)}.pk")
+            with open(batch_loss_validation_dir, "wb") as f:
+                pk.dump(validation_losses, f)
 
     @torch.no_grad()
     def get_validation_loss(self, validation_loader, transform=None):
@@ -260,6 +266,7 @@ class MapBYOL(nn.Module):
         for epoch in range(epochs):
             batch_losses = []
             validation_losses = []
+            avg_batch_losses_20 = []
             logging.info(f"Starting Epoch: {epoch + 1}")
             for batch, (x_1, x_2) in enumerate(train_loader):
                 # x_1 and x_2 are tensors containing patches, 
@@ -279,6 +286,7 @@ class MapBYOL(nn.Module):
                 if batch % (len(train_loader) // batch_log_rate + 1) == 0 and batch != 0:
                     with torch.no_grad():
                         avg_loss = np.mean(batch_losses[-20:])
+                        avg_batch_losses_20.append(avg_loss)
                         logging.info(
                             f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Training Loss = {avg_loss}")
 
@@ -296,19 +304,19 @@ class MapBYOL(nn.Module):
                                                model_state_dict=self.state_dict(),
                                                optimiser_state_dict=self.optimiser.state_dict,
                                                loss=loss.cpu().detach(),
-                                               avg_loss_20=avg_loss,
+                                               avg_batch_losses_20=avg_batch_losses_20,
                                                run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-        with torch.no_grad():
-            self.update_checkpoint(checkpoint_dir=checkpoint_dir,
-                                   batch_losses=batch_losses,
-                                   validation_losses=validation_losses,
-                                   epoch=epochs,
-                                   batch=len(train_loader),
-                                   model_state_dict=self.state_dict(),
-                                   optimiser_state_dict=self.optimiser.state_dict,
-                                   loss=loss.cpu().detach(),
-                                   avg_loss_20=np.mean(batch_losses[-20:]),
-                                   run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+            with torch.no_grad():
+                self.update_checkpoint(checkpoint_dir=checkpoint_dir,
+                                       batch_losses=batch_losses,
+                                       validation_losses=validation_losses,
+                                       epoch=epochs,
+                                       batch=len(train_loader),
+                                       model_state_dict=self.state_dict(),
+                                       optimiser_state_dict=self.optimiser.state_dict,
+                                       loss=loss.cpu().detach(),
+                                       avg_batch_losses_20=avg_batch_losses_20,
+                                       run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
         return self.checkpoint
