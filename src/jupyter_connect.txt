@@ -1,0 +1,29 @@
+CONNECTING FROM JUPYTER REMOTELY
+
+1) From the head node run:
+
+sbatch jupyter_lab.sh
+
+(this uses port 8888 to execute the notebook)
+
+2) Repeatedly run 
+
+cat logs/jupyter.log
+
+until the remote server starts running 
+
+3) Once the server starts running, you'll see that the server is running at:
+
+http://<node_name>.inf.ed.ac.uk:8888/lab?token=<token>
+
+4) From the local terminal, connect the head node to the GPU node:
+
+ssh -L8888:<node_name>.inf.ed.ac.uk:8888 <student_id>@mlp.inf.ed.ac.uk
+
+5) From the local terminal, connect to the head node:
+
+ssh -L 8888:localhost:8888 <student_id>@mlp.inf.ed.ac.uk
+
+6) In a local browser, then just run:
+
+http://127.0.0.1:8888/lab?token=<token>

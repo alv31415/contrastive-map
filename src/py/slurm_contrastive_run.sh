@@ -8,6 +8,10 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-08:00:00
 #SBATCH --partition=Teach-LongJobs
+#SBATCH --mail-type=begin        # send mail when job begins
+#SBATCH --mail-type=end          # send mail when job ends
+#SBATCH --mail-type=fail         # send mail if job fails
+#SBATCH --mail-user=%u@ed.ac.uk
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
@@ -17,13 +21,7 @@ STUDENT_ID=$(whoami)
 # make available all commands
 source /home/${STUDENT_ID}/.bashrc
 
-echo "________________________________________"
-
-echo "Using W&B API key: ${WANDB_API_KEY}"
-echo "Running W&B in ${WANDB_MODE} mode"
-
-# make script bail out after first error
-# set -e
+set -e
 
 echo "________________________________________"
 
