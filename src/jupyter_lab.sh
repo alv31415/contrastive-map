@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-04:00:00
 #SBATCH --mem=16GB
-#SBATCH --output=/home/%u/honours-project/contrastive-map/logs/jupyter.log
+#SBATCH --output=/home/%u/honours-project/contrastive-map/src/jupyter_logs/jupyter.log
 
 STUDENT_ID=$(whoami)
 HOME_DIR=/home/${STUDENT_ID}/honours-project
