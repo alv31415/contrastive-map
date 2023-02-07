@@ -20,7 +20,7 @@ source ${HOME_DIR}/henv/bin/activate
 
 cd ${JUPYTER_DIR}
 
-JUPYTER_PORT=8888
+JUPYTER_PORT=8000
 
 echo "Running jupyter on $(pwd), at port ${JUPYTER_PORT}"
 
