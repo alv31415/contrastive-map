@@ -1,18 +1,23 @@
 #!/bin/bash
 #SBATCH --job-name=jupyter
-#SBATCH --partition=Teach-Short
+#SBATCH --nodelist=landonia24
+#SBATCH --partition=Teach-LongJobs
 #SBATCH --gres=gpu:1
-#SBATCH --time=0-00:30:00
+#SBATCH --time=0-02:00:00
 #SBATCH --mem=16GB
 #SBATCH --output=/home/%u/honours-project/contrastive-map/logs/jupyter.log
 
 STUDENT_ID=$(whoami)
 HOME_DIR=/home/${STUDENT_ID}/honours-project
 EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/dev
+SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
+SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
+
+JUPYTER_DIR=${SCRATCH_OUT_DIR}
 
 source ${HOME_DIR}/henv/bin/activate
 
-cd ${EXPERIMENT_DIR}
+cd ${JUPYTER_DIR}
 
 JUPYTER_PORT=8888
 
