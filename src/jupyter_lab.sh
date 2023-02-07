@@ -24,4 +24,4 @@ JUPYTER_PORT=8000
 
 echo "Running jupyter on $(pwd), at port ${JUPYTER_PORT}"
 
-jupyter lab --ip=0.0.0.0 --port=${JUPYTER_PORT} --no-browser
+jupyter lab --ip=0.0.0.0 --port=${JUPYTER_PORT}
