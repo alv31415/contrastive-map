@@ -14,7 +14,7 @@ EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/dev
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
 
-JUPYTER_DIR=${SCRATCH_OUT_DIR}
+JUPYTER_DIR=${SCRATCH_DIR}
 
 source ${HOME_DIR}/henv/bin/activate
 
