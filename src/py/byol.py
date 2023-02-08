@@ -232,8 +232,13 @@ class MapBYOL(nn.Module):
 
         self.eval()
 
+        if transform is None:
+            transform_inputs = lambda x: x
+        else:
+            transform_inputs = transform
+
         for x_1, x_2 in validation_loader:
-            x_1, x_2 = transform(x_1.to(self.device)), transform(x_2.to(self.device))
+            x_1, x_2 = transform_inputs(x_1.to(self.device)), transform(x_2.to(self.device))
             val_losses.append(self.get_loss(x_1, x_2).cpu())
 
         self.train()
