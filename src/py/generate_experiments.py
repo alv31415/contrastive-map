@@ -99,8 +99,10 @@ def main(args):
                         ]
     """
 
-    experiment_argss = [{"--epochs": 5, "--use-byol": False, "--encoder-layer-idx": -2},
-                        {"--epochs": 5, "--pretrain-encoder": False, "--encoder": "cnn", "--encoder-layer-idx": -1}
+    experiment_argss = [{"--epochs": 5, "--use-byol": False, "--encoder-layer-idx": -2, "--patch-size": 128},
+                        {"--epochs": 5, "--encoder": "cnn", "--encoder-layer-idx": -1, "--patch-size": 128},
+                        {"--epochs": 5, "--encoder": "resnet34", "--encoder-layer-idx": -2, "--patch-size": 128},
+                        {"--epochs": 5, "--encoder": "resnet50", "--encoder-layer-idx": -2, "--patch-size": 128}
                         ]
 
     experiment_run_args = [create_experiment(main_file=args.main,
