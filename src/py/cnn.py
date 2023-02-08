@@ -1,3 +1,12 @@
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+logging.basicConfig(format="%(asctime)s %(levelname)-4s %(message)s",
+                    level=logging.INFO,
+                    datefmt="%d-%m-%Y %H:%M:%S")
+
 import torch
 import torch.nn as nn
 
@@ -23,7 +32,7 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
 
         lin_in_features = int((input_dim / 2 ** 5)**2 * 256)
-        print(lin_in_features)
+        logging.info(f"Using {lin_in_features} features for the final linear layer input.")
 
         # define the model
         self.cnn = nn.Sequential(
@@ -44,4 +53,4 @@ class CNN(nn.Module):
     @torch.no_grad()
     def forward(self, x):
         f = torch.max(x)
-        return self.cnn(x/f)
+        return self.cnn(torch.movedim(x/f, -1, 1))

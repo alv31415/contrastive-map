@@ -149,7 +149,7 @@ class MapSIMCLR(nn.Module):
         z_1 = self.model(x_1)
         z_2 = self.model(x_2)
 
-        z_batch = torch.stack((z_1, z_2), dim=1).view(-1, self.OUTPUT_DIM)
+        z_batch = torch.stack((z_1, z_2), dim=1).view(-1, z_1.shape[1])
 
         return self.contrastive_loss(z_batch)
 
