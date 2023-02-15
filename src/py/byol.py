@@ -43,15 +43,17 @@ class MapBYOL(nn.Module):
     Critically, we only compute gradients with respect to the parameters of the online network
     """
 
-    def __init__(self, encoder, encoder_layer_idx, projector_parameters, predictor_parameters, ema_tau):
+    def __init__(self, encoder, encoder_parameters, projector_parameters, predictor_parameters, ema_tau):
         """
         encoder: a nn.Module, containing an encoder network.
-        encoder_layer_idx: an int, corresponding to the index of the layer of the encoder 
-                           which is actually used for encoding.
-                           For instance, in BYOL, if using a ResNet as an encoder, 
-                           the paper uses the output of the last average pooliing layer, 
-                           which is the penultimate layer of the ResNet 
-                           (corresponding to encoder_layer_idx = -2).
+        encoder_parameters: a dict with 2 keys:
+                            - encoder_layer_idx: an int, corresponding to the index of the layer of the encoder
+                                                   which is actually used for encoding.
+                                                   For instance, in BYOL, if using a ResNet as an encoder,
+                                                   the paper uses the output of the last average pooliing layer,
+                                                   which is the penultimate layer of the ResNet
+                                                   (corresponding to encoder_layer_idx = -2).
+                            - use_resnet: a boolean, corresponding to whether the encoder is a ResNet or a CNN.
         projector_parameters: a dict, containing the parameters to initialise an MLP to act as 
                               a projector network.
         projector_parameters: a dict, containing the parameters to initialise an MLP to act as 
@@ -62,7 +64,7 @@ class MapBYOL(nn.Module):
         super(MapBYOL, self).__init__()
 
         self.kwargs = {"encoder" : encoder,
-                       "encoder_layer_idx" : encoder_layer_idx,
+                       "encoder_parameters" : encoder_parameters,
                        "projector_parameters" : projector_parameters,
                        "predictor_parameters" : predictor_parameters,
                        "ema_tau" : ema_tau}
@@ -73,10 +75,12 @@ class MapBYOL(nn.Module):
 
         self.ema_tau = ema_tau
 
+        self.use_resnet = encoder_parameters["use_resnet"]
+
         # define networks
         self.online_network = EncoderProjectorNN(encoder=encoder,
                                                  projector=MLP(**projector_parameters),
-                                                 encoder_layer_idx=encoder_layer_idx)
+                                                 encoder_layer_idx=encoder_parameters["encoder_layer_idx"])
 
         self.target_network = deepcopy(self.online_network)
 
@@ -161,7 +165,7 @@ class MapBYOL(nn.Module):
         """
         Returns the encoding (without projection) of the input, corresponding to the online network.
         """
-        if x.shape[:2] != (self.RESNET_DIM, self.RESNET_DIM):
+        if self.use_resnet:
             x = self.img_to_resnet(x)
 
         return self.online_network.encode(x)
@@ -224,7 +228,7 @@ class MapBYOL(nn.Module):
                 pk.dump(validation_losses, f)
 
     @torch.no_grad()
-    def get_validation_loss(self, validation_loader, transform=None):
+    def get_validation_loss(self, validation_loader):
         """
         Computes the average validation loss of the model.
         """
@@ -232,10 +236,10 @@ class MapBYOL(nn.Module):
 
         self.eval()
 
-        if transform is None:
-            transform_inputs = lambda x: x
+        if self.use_resnet is None:
+            transform_inputs = self.img_to_resnet
         else:
-            transform_inputs = transform
+            transform_inputs = lambda x: x
 
         for x_1, x_2 in validation_loader:
             x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
@@ -245,8 +249,7 @@ class MapBYOL(nn.Module):
 
         return np.mean(val_losses)
 
-    def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, transform=None,
-                    batch_log_rate=100):
+    def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, batch_log_rate=100):
         """
         Trains the network.
         ---------------------------------------------------------------------------------------------------
@@ -254,8 +257,6 @@ class MapBYOL(nn.Module):
         :param validation_loader: a PyTorch DataLoader, containing the validation data.
         :param epochs: an int, the number of epochs for training.
         :param checkpoint_dir: a string, the directory to which to write the checkpoints.
-        :param transform: a transformation function for the inputs, to apply right before passing it to the 
-                          network. By default no transformation is applied.
         :param batch_log_rate: an int. Every batch_log_rate batches, the performance of the network 
                                is logged. By default logging is performed every 100 batches.
         
@@ -263,10 +264,10 @@ class MapBYOL(nn.Module):
 
         self.to(self.device)
 
-        if transform is None:
-            transform_inputs = lambda x: x
+        if self.use_resnet is None:
+            transform_inputs = self.img_to_resnet
         else:
-            transform_inputs = transform
+            transform_inputs = lambda x: x
 
         for epoch in range(epochs):
             batch_losses = []

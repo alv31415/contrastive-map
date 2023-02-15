@@ -23,27 +23,42 @@ from mlp import MLP
 from encoder_projector_nn import EncoderProjectorNN
 
 class MapSIMCLR(nn.Module):
-    def __init__(self, encoder, encoder_layer_idx, projector_parameters, tau):
+    def __init__(self, encoder, encoder_parameters, projector_parameters, tau):
         """
+        encoder: a nn.Module, containing an encoder network.
+        encoder_parameters: a dict with 2 keys:
+                            - encoder_layer_idx: an int, corresponding to the index of the layer of the encoder
+                                                   which is actually used for encoding.
+                                                   For instance, in BYOL, if using a ResNet as an encoder,
+                                                   the paper uses the output of the last average pooliing layer,
+                                                   which is the penultimate layer of the ResNet
+                                                   (corresponding to encoder_layer_idx = -2).
+                            - use_resnet: a boolean, corresponding to whether the encoder is a ResNet or a CNN.
+        projector_parameters: a dict, containing the parameters to initialise an MLP to act as
+                              a projector network.
+        projector_parameters: a dict, containing the parameters to initialise an MLP to act as
+                              a predictor network.
         tau: temperature parameter for NT-XENT loss
         """
         super(MapSIMCLR, self).__init__()
 
         self.kwargs = {"encoder": encoder,
-                       "encoder_layer_idx": encoder_layer_idx,
+                       "encoder_parameters": encoder_parameters,
                        "projector_parameters": projector_parameters,
                        "tau": tau}
         
         # model constants
         self.MAX_PIXEL_VALUE = 255
         self.RESNET_DIM = 224
+
+        self.tau = tau
+
+        self.use_resnet = encoder_parameters["use_resnet"]
         
         # define the model
         self.model = EncoderProjectorNN(encoder = encoder,
                                         projector = MLP(**projector_parameters),
-                                        encoder_layer_idx = encoder_layer_idx)
-        
-        self.tau = tau
+                                        encoder_layer_idx = encoder_parameters["encoder_layer_idx"])
         
         # define optimiser
         self.optimiser = None
@@ -180,7 +195,7 @@ class MapSIMCLR(nn.Module):
                 pk.dump(validation_losses, f)
 
     @torch.no_grad()
-    def get_validation_loss(self, validation_loader, transform=None):
+    def get_validation_loss(self, validation_loader):
         """
         Computes the average validation loss of the model.
         """
@@ -188,10 +203,10 @@ class MapSIMCLR(nn.Module):
 
         self.eval()
 
-        if transform is None:
-            transform_inputs = lambda x: x
+        if self.use_resnet is None:
+            transform_inputs = self.img_to_resnet
         else:
-            transform_inputs = transform
+            transform_inputs = lambda x: x
 
         for x_1, x_2 in validation_loader:
             x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
@@ -201,18 +216,17 @@ class MapSIMCLR(nn.Module):
 
         return np.mean(val_losses)
     
-    def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, transform=None,
-                    batch_log_rate=100):
+    def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, batch_log_rate=100):
         """
         Trains the network.
         """
 
         self.to(self.device)
 
-        if transform is None:
-            transform_inputs = lambda x: x
+        if self.use_resnet is None:
+            transform_inputs = self.img_to_resnet
         else:
-            transform_inputs = transform
+            transform_inputs = lambda x: x
 
         for epoch in range(epochs):
             batch_losses = []

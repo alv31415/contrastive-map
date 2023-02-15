@@ -127,15 +127,22 @@ def main(args):
     validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
     use_transform = True
+
+    encoder_parameters = {"encoder_layer_idx" : args.encoder_layer_idx,
+                          "use_resnet" : args.encoder != "cnn"}
+
     if args.encoder == "cnn":
-        use_transform = False
         projector_parameters = {"input_dim": 512,
                                 "hidden_dim": 2048,
                                 "output_dim": 256,
                                 "activation": nn.ReLU(),
                                 "use_bias": True,
                                 "use_batch_norm": True}
-        encoder = CNN(input_dim = args.patch_size, in_channels = 3, output_dim = 512, use_bias = True, use_batch_norm = True)
+        encoder = CNN(input_dim = args.patch_size,
+                      in_channels = 3,
+                      output_dim = 512,
+                      use_bias = True,
+                      use_batch_norm = True)
     elif args.encoder == "resnet34":
         projector_parameters = {"input_dim": 512,
                                 "hidden_dim": 2048,
@@ -185,7 +192,7 @@ def main(args):
 
     if args.use_byol:
         model = MapBYOL(encoder=encoder,
-                        encoder_layer_idx=args.encoder_layer_idx,
+                        encoder_parameters=encoder_parameters,
                         projector_parameters=projector_parameters,
                         predictor_parameters=predictor_parameters,
                         ema_tau = args.byol_ema_tau)
@@ -193,7 +200,7 @@ def main(args):
         logging.info(f"Using BYOL with tau = {args.byol_ema_tau}, with encoder layer index = {args.encoder_layer_idx}")
     else:
         model = MapSIMCLR(encoder=encoder,
-                          encoder_layer_idx=args.encoder_layer_idx,
+                          encoder_parameters=encoder_parameters,
                           projector_parameters=projector_parameters,
                           tau = args.simclr_tau)
 
@@ -210,7 +217,6 @@ def main(args):
                       validation_loader = validation_loader,
                       epochs = args.epochs,
                       checkpoint_dir = os.path.join(args.output, args.experiment_name),
-                      transform = model.img_to_resnet if use_transform else None,
                       batch_log_rate = args.log_interval)
 
 # --------------------------------------------------- RUN ---------------------------------------------------
