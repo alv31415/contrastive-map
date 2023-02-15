@@ -3,8 +3,8 @@
 #SBATCH --nodelist=landonia24
 #SBATCH --partition=Teach-LongJobs
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=4
-#SBATCH --time=0-04:00:00
+#SBATCH --cpus-per-task=6
+#SBATCH --time=0-09:00:00
 #SBATCH --mem=16GB
 #SBATCH --output=/home/%u/honours-project/contrastive-map/src/jupyter_logs/jupyter.log
 
@@ -24,4 +24,4 @@ JUPYTER_PORT=8000
 
 echo "Running jupyter on $(pwd), at port ${JUPYTER_PORT}"
 
-jupyter lab --ip=0.0.0.0 --port=${JUPYTER_PORT}
+jupyter lab --ip=0.0.0.0 --port=${JUPYTER_PORT} --no-browser

@@ -7,12 +7,12 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=14000
 #SBATCH --cpus-per-task=4
-#SBATCH --time=1-08:00:00
+#SBATCH --time=1-12:00:00
 #SBATCH --partition=Teach-LongJobs
 #SBATCH --mail-type=begin        # send mail when job begins
 #SBATCH --mail-type=end          # send mail when job ends
 #SBATCH --mail-type=fail         # send mail if job fails
-#SBATCH --mail-user=%u@ed.ac.uk
+#SBATCH --mail-user=s1908368@ed.ac.uk
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
 echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
