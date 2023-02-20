@@ -308,7 +308,7 @@ class MapBYOL(nn.Module):
                             f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Training Loss = {avg_loss}")
 
                         if batch % (len(train_loader) // (batch_log_rate//4) + 1) == 0:
-                            validation_loss = self.get_validation_loss(validation_loader, transform)
+                            validation_loss = self.get_validation_loss(validation_loader)
                             validation_losses.append(validation_loss)
                             logging.info(
                                 f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Validation Loss = {validation_loss}")
