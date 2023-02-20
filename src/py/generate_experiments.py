@@ -108,7 +108,7 @@ def main(args):
     """
     experiment_argss = [{"--epochs": 5, "--use-byol": False, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": False},
                         {"--epochs": 5, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": False},
-                        {"--epochs": 5, "--byol-ema-tau": 0.95, "--use-bool": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
+                        {"--epochs": 5, "--byol-ema-tau": 0.95, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
                         {"--epochs": 5, "--byol-ema-tau": 0.9, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
                         {"--epochs": 5, "--byol-ema-tau": 0.8, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
                         {"--epochs": 5, "--encoder": "cnn", "--encoder-layer-idx": -1, "--patch-size": 128},
