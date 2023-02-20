@@ -126,8 +126,6 @@ def main(args):
     train_loader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
     validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
-    use_transform = True
-
     encoder_parameters = {"encoder_layer_idx" : args.encoder_layer_idx,
                           "use_resnet" : args.encoder != "cnn"}
 

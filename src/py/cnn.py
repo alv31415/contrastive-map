@@ -50,7 +50,6 @@ class CNN(nn.Module):
                     nn.Linear(in_features = lin_in_features, out_features = output_dim, bias = use_bias)
                 )
 
-    @torch.no_grad()
     def forward(self, x):
         f = torch.max(x)
         return self.cnn(torch.movedim(x/f, -1, 1))
