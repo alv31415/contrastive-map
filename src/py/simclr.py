@@ -54,8 +54,6 @@ class MapSIMCLR(nn.Module):
         self.tau = tau
 
         self.use_resnet = encoder_parameters["use_resnet"]
-
-        print(f"Using ResNet transform: {self.use_resnet}")
         
         # define the model
         self.model = EncoderProjectorNN(encoder = encoder,
@@ -90,8 +88,6 @@ class MapSIMCLR(nn.Module):
 
         if torch.max(img) > 1:
             norm_img = norm_img / self.MAX_PIXEL_VALUE
-
-        print(f"Initial image shape: {img.shape}; ResNet image shape: {norm_img.shape} with maximum {torch.max(norm_img)}")
 
         return norm_img
 
@@ -220,7 +216,7 @@ class MapSIMCLR(nn.Module):
 
         self.eval()
 
-        if self.use_resnet is None:
+        if self.use_resnet:
             transform_inputs = self.img_to_resnet
         else:
             transform_inputs = lambda x: x
@@ -240,7 +236,7 @@ class MapSIMCLR(nn.Module):
 
         self.to(self.device)
 
-        if self.use_resnet is None:
+        if self.use_resnet:
             transform_inputs = self.img_to_resnet
         else:
             transform_inputs = lambda x: x
