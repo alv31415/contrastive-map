@@ -78,38 +78,50 @@ class MapSIMCLR(nn.Module):
                            "run_start": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                            "run_end": None,
                            "model_kwargs": self.kwargs}
-    
-    def img_to_resnet(self, img, dim = None):
+
+    @torch.no_grad()
+    def to_tensor(self, img):
+        if len(img.shape) == 3:
+            norm_img = torch.moveaxis(img, -1, 0)
+        else:
+            norm_img = torch.moveaxis(img, -1, 1)
+
+        if torch.max(img) > 1:
+            norm_img = norm_img / self.MAX_PIXEL_VALUE
+
+        return norm_img
+
+    def img_to_resnet(self, img, dim=None):
         """
         Convert image into the desired format for ResNet.
         The image must have width and height of at least self.RESNET_DIM, with RGB values between 0 and 1.
-        Moreover, it must be normalised, by using a mean of [0.485, 0.456, 0.406] and a standard deviation of [0.229, 0.224, 0.225]
-        --------------------------------------------------------------------------------------------------------------------------------
-        :param img: a numpy nd.array, with 3 colour channels (this must be stored in the last dimensions), which has to be fed to ResNet
-        :param dim: the desired dimension of the image (if we want to resize img before feeding it to ResNet).
-                    This should be at least self.RESTNET_DIM.
-        --------------------------------------------------------------------------------------------------------------------------------
-        :return a Tensor, with the first dimension corresponding to the RGB channels, and normalised to be used by ResNet.
+        Moreover, it must be normalised, by using a mean of [0.485, 0.456, 0.406] and a standard deviation
+        of [0.229, 0.224, 0.225]
+        ---------------------------------------------------------------------------------------------------
+        :param img: a numpy nd.array, with 3 colour channels (this must be stored in the last dimensions),
+        which has to be fed to ResNet
+        :param dim: the desired dimension of the image (if we want to resize img before feeding it to
+                    ResNet). This should be at least self.RESTNET_DIM.
+        ---------------------------------------------------------------------------------------------------
+        :return a Tensor, with the first dimension corresponding to the RGB channels, and normalised to be
+                used by ResNet.
         """
-        
+
         # put the colour channel in front and normalise into range [0,1]
-        if len(img.shape) == 3:
-            norm_img = torch.moveaxis(img, -1, 0)/self.MAX_PIXEL_VALUE
-        else:
-            norm_img = torch.moveaxis(img, -1, 1)/self.MAX_PIXEL_VALUE
-        
+        norm_img = self.to_tensor(img)
+
         # resize
         if dim is not None:
             assert dim >= self.RESNET_DIM, f"Provided dimension {dim} is less than the required for RESNET ({self.RESNET_DIM})"
-            norm_img = T.Resize(dim)(norm_img)  
+            norm_img = T.Resize(dim)(norm_img)
         else:
             norm_img = T.Resize(self.RESNET_DIM)(norm_img)
-        
+
         # normalise mean and variance
         mean = torch.Tensor([0.485, 0.456, 0.406])
         std = torch.Tensor([0.229, 0.224, 0.225])
-        
-        return T.Normalize(mean = mean, std = std)(norm_img)
+
+        return T.Normalize(mean=mean, std=std)(norm_img)
     
     def contrastive_loss(self, z_batch):
         """
@@ -138,16 +150,17 @@ class MapSIMCLR(nn.Module):
 
         # return the NT-XENT loss
         return 1/N * F.cross_entropy(sim_batch, labels, reduction = "sum")
-    
+
     def forward(self, x):
         """
-        A forward pass through the network
+        Returns the encoding (without projection) of the input, corresponding to the online network.
         """
-        
-        if x.shape[:2] != (self.RESNET_DIM, self.RESNET_DIM):
-            x = self.img_to_resnet(x)
-            
-        return self.model.encode(x)
+        if self.use_resnet:
+            forward_x = self.img_to_resnet(x)
+        else:
+            forward_x = self.to_tensor(x)
+
+        return self.online_network.encode(forward_x)
         
     
     def compile_optimiser(self, **kwargs):

@@ -51,5 +51,4 @@ class CNN(nn.Module):
                 )
 
     def forward(self, x):
-        f = torch.max(x)
-        return self.cnn(torch.movedim(x/f, -1, 1))
+        return self.cnn(x)

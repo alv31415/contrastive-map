@@ -114,6 +114,18 @@ class MapBYOL(nn.Module):
         for online_params, target_params in zip(self.online_network.parameters(), self.target_network.parameters()):
             target_params.data = self.ema_tau * target_params.data + (1 - self.ema_tau) * online_params.data
 
+    @torch.no_grad()
+    def to_tensor(self, img):
+        if len(img.shape) == 3:
+            norm_img = torch.moveaxis(img, -1, 0)
+        else:
+            norm_img = torch.moveaxis(img, -1, 1)
+
+        if torch.max(img) > 1:
+            norm_img = norm_img / self.MAX_PIXEL_VALUE
+
+        return norm_img
+
     def img_to_resnet(self, img, dim=None):
         """
         Convert image into the desired format for ResNet.
@@ -131,10 +143,7 @@ class MapBYOL(nn.Module):
         """
 
         # put the colour channel in front and normalise into range [0,1]
-        if len(img.shape) == 3:
-            norm_img = torch.moveaxis(img, -1, 0) / self.MAX_PIXEL_VALUE
-        else:
-            norm_img = torch.moveaxis(img, -1, 1) / self.MAX_PIXEL_VALUE
+        norm_img = self.to_tensor(img)
 
         # resize
         if dim is not None:
@@ -166,9 +175,11 @@ class MapBYOL(nn.Module):
         Returns the encoding (without projection) of the input, corresponding to the online network.
         """
         if self.use_resnet:
-            x = self.img_to_resnet(x)
+            forward_x = self.img_to_resnet(x)
+        else:
+            forward_x = self.to_tensor(x)
 
-        return self.online_network.encode(x)
+        return self.online_network.encode(forward_x)
 
     def compile_optimiser(self, **kwargs):
         """
