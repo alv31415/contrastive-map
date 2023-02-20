@@ -129,8 +129,6 @@ def main(args):
     encoder_parameters = {"encoder_layer_idx" : args.encoder_layer_idx,
                           "use_resnet" : args.encoder != "cnn"}
 
-    print(encoder_parameters)
-
     if args.encoder == "cnn":
         projector_parameters = {"input_dim": 512,
                                 "hidden_dim": 2048,

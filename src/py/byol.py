@@ -77,6 +77,8 @@ class MapBYOL(nn.Module):
 
         self.use_resnet = encoder_parameters["use_resnet"]
 
+        print(f"Using ResNet transform: {self.use_resnet}")
+
         # define networks
         self.online_network = EncoderProjectorNN(encoder=encoder,
                                                  projector=MLP(**projector_parameters),
@@ -124,6 +126,8 @@ class MapBYOL(nn.Module):
         if torch.max(img) > 1:
             norm_img = norm_img / self.MAX_PIXEL_VALUE
 
+        print(f"Initial image shape: {img.shape}; ResNet image shape: {norm_img.shape} with maximum {torch.max(norm_img)}")
+
         return norm_img
 
     def img_to_resnet(self, img, dim=None):
@@ -133,7 +137,7 @@ class MapBYOL(nn.Module):
         Moreover, it must be normalised, by using a mean of [0.485, 0.456, 0.406] and a standard deviation 
         of [0.229, 0.224, 0.225]
         ---------------------------------------------------------------------------------------------------
-        :param img: a numpy nd.array, with 3 colour channels (this must be stored in the last dimensions), 
+        :param img: a torch tensor, with 3 colour channels (this must be stored in the last dimensions),
         which has to be fed to ResNet
         :param dim: the desired dimension of the image (if we want to resize img before feeding it to 
                     ResNet). This should be at least self.RESTNET_DIM.
