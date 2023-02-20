@@ -194,7 +194,7 @@ class MapSIMCLR(nn.Module):
             if not os.path.isdir(checkpoint_dir):
                 os.makedirs(checkpoint_dir)
 
-            model_params_dir = os.path.join(checkpoint_dir, "byol_checkpoint.pt")
+            model_params_dir = os.path.join(checkpoint_dir, "simclr_checkpoint.pt")
             torch.save(self.checkpoint, model_params_dir)
 
             batch_loss_train_dir = os.path.join(checkpoint_dir,
