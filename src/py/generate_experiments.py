@@ -106,6 +106,8 @@ def main(args):
                         {"--epochs": 5, "--encoder": "resnet50", "--encoder-layer-idx": -2, "--patch-size": 128}
                         ]
     """
+    """
+    1519859
     experiment_argss = [{"--epochs": 5, "--use-byol": False, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": False},
                         {"--epochs": 5, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": False},
                         {"--epochs": 5, "--byol-ema-tau": 0.95, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
@@ -113,6 +115,8 @@ def main(args):
                         {"--epochs": 5, "--byol-ema-tau": 0.8, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
                         {"--epochs": 5, "--encoder": "cnn", "--encoder-layer-idx": -1, "--patch-size": 128},
                         ]
+    """
+    experiment_argss = [{"--epochs": 5, "--encoder": "cnn", "--encoder-layer-idx": -1, "--patch-size": 128}]
 
     experiment_run_args = [create_experiment(main_file=args.main,
                                              scratch_data_dir=args.scratch_data_dir,
