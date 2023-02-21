@@ -219,7 +219,7 @@ class MapSIMCLR(nn.Module):
         if self.use_resnet:
             transform_inputs = self.img_to_resnet
         else:
-            transform_inputs = lambda x: x
+            transform_inputs = self.to_tensor
 
         for x_1, x_2 in validation_loader:
             x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
@@ -239,7 +239,7 @@ class MapSIMCLR(nn.Module):
         if self.use_resnet:
             transform_inputs = self.img_to_resnet
         else:
-            transform_inputs = lambda x: x
+            transform_inputs = self.to_tensor
 
         for epoch in range(epochs):
             batch_losses = []
