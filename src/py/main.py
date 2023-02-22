@@ -140,7 +140,8 @@ def main(args):
                       in_channels = 3,
                       output_dim = 512,
                       use_bias = True,
-                      use_batch_norm = True)
+                      use_batch_norm = True,
+                      use_flatten = False)
     elif args.encoder == "resnet34":
         projector_parameters = {"input_dim": 512,
                                 "hidden_dim": 2048,

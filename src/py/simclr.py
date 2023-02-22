@@ -160,7 +160,7 @@ class MapSIMCLR(nn.Module):
         else:
             forward_x = self.to_tensor(x)
 
-        return self.online_network.encode(forward_x)
+        return self.model.encode(forward_x)
         
     
     def compile_optimiser(self, **kwargs):
