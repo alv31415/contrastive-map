@@ -262,7 +262,7 @@ class UNet(nn.Module):
         reconstructions = self(test_imgs)
 
         for i, reconstruction in enumerate(reconstructions):
-            with open(os.path.join(checkpoint_dir, reconstructions, f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
+            with open(os.path.join(checkpoint_dir, "reconstructions", f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
                 Image.fromarray(np.array(reconstruction)).save(f)
 
         del test_imgs
