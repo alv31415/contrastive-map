@@ -17,7 +17,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
@@ -255,11 +254,11 @@ class UNet(nn.Module):
                 pk.dump(validation_losses, f)
 
     @torch.no_grad()
-    def save_reconstructions(self, epoch, batch):
+    def save_reconstructions(self, checkpoint_dir, epoch, batch):
         reconstructions = self(self.test_imgs)
 
         for i, reconstruction in enumerate(reconstructions):
-            with open(f"{i}_b{batch}_e{epoch}.png", "wb") as f:
+            with open(os.path.join(checkpoint_dir, reconstructions, f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
                 Image.fromarray(np.array(reconstruction)).save(f)
 
     def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, batch_log_rate=100,
@@ -290,7 +289,7 @@ class UNet(nn.Module):
                 self.optimiser.step()
 
                 if batch % save_reconstruction_interval == 0:
-                    self.save_reconstructions(epoch = epoch, batch = batch)
+                    self.save_reconstructions(checkpoint_dir = checkpoint_dir, epoch = epoch, batch = batch)
 
                 if batch % (len(train_loader) // batch_log_rate + 1) == 0 and batch != 0:
                     with torch.no_grad():
