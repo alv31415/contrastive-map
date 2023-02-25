@@ -12,7 +12,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)-4s %(message)s',
 import torch
 from torch.utils.data import Dataset
 
-from ..map_patch import MapPatch
+from src.py.map_patch import MapPatch
 
 class CanonicalDataset(Dataset):
     """
