@@ -256,13 +256,18 @@ class UNet(nn.Module):
     @torch.no_grad()
     def save_reconstructions(self, checkpoint_dir, epoch, batch):
 
+        reconstruction_dir = os.path.join(checkpoint_dir, "reconstructions")
+
+        if not os.path.exists(reconstruction_dir):
+            os.makedirs(reconstruction_dir)
+
         self.to(self.device)
         test_imgs = self.test_imgs.to(self.device)
 
         reconstructions = self(test_imgs)
 
         for i, reconstruction in enumerate(reconstructions):
-            with open(os.path.join(checkpoint_dir, "reconstructions", f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
+            with open(os.path.join(reconstruction_dir, f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
                 Image.fromarray(np.array(reconstruction)).save(f)
 
         del test_imgs
