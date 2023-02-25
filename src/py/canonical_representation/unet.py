@@ -214,7 +214,7 @@ class UNet(nn.Module):
         for original, target in evaluation_loader:
             original, target = original.to(self.device), self.norm_img(target).to(self.device)
             reconstruction = self(original)
-            eval_losses.append(self.get_loss(reconstruction = reconstruction, target = target))
+            eval_losses.append(self.get_loss(reconstruction = reconstruction, target = target).cpu())
 
             del original
             del target
