@@ -268,7 +268,9 @@ class UNet(nn.Module):
 
         for i, reconstruction in enumerate(reconstructions):
             with open(os.path.join(reconstruction_dir, f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
-                Image.fromarray(np.array(reconstruction.cpu())).save(f)
+                # PIL can't save images with pixels between 0 and 1
+                save_img = np.round(np.array(reconstruction.cpu()) * self.MAX_PIXEL_VALUE).astype(np.uint8)
+                Image.fromarray(save_img).save(f)
 
         del test_imgs
 
