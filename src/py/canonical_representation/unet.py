@@ -267,6 +267,10 @@ class UNet(nn.Module):
         Trains the network.
         """
 
+        if self.criterion is None or self.optimiser is None:
+            logging.warning("Can't train if the optimiser or loss haven't been set. Please run model.compile_model first.")
+            return None
+
         self.to(self.device)
 
         for epoch in range(epochs):

@@ -232,6 +232,9 @@ class MapSIMCLR(nn.Module):
         """
         Trains the network.
         """
+        if self.optimiser is None:
+            logging.warning("Can't train if the optimiser hasn't been set. Please run model.compile_optimiser first.")
+            return None
 
         self.to(self.device)
 
