@@ -193,7 +193,6 @@ class UNet(nn.Module):
         else:
             logging.info(f"Provided loss string '{loss_str}' is invalid (must be one of 'MSE' or 'L1'. Defaulting to MSE loss.")
 
-
         self.optimiser = optimiser(self.parameters(), **optim_kwargs)
 
     def norm_img(self, img):
