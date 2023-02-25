@@ -268,7 +268,7 @@ class UNet(nn.Module):
 
         for i, reconstruction in enumerate(reconstructions):
             with open(os.path.join(reconstruction_dir, f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
-                Image.fromarray(np.array(reconstruction)).save(f)
+                Image.fromarray(np.array(reconstruction.cpu())).save(f)
 
         del test_imgs
 
