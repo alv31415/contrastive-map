@@ -255,11 +255,17 @@ class UNet(nn.Module):
 
     @torch.no_grad()
     def save_reconstructions(self, checkpoint_dir, epoch, batch):
-        reconstructions = self(self.test_imgs)
+
+        self.to(self.device)
+        test_imgs = self.test_imgs.to(self.device)
+
+        reconstructions = self(test_imgs)
 
         for i, reconstruction in enumerate(reconstructions):
             with open(os.path.join(checkpoint_dir, reconstructions, f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
                 Image.fromarray(np.array(reconstruction)).save(f)
+
+        del test_imgs
 
     def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, batch_log_rate=100,
                     save_reconstruction_interval=100):
