@@ -16,6 +16,10 @@ from ..map_patch import MapPatch
 
 
 class CanonicalDataset(Dataset):
+    """
+    Dataset to generate canonical representations of historical maps.
+    These canonical representations should be in the style of OSM.
+    """
     def __init__(self, historical_patches, osm_patches):
         self.historical_patches = historical_patches
         self.osm_patches = osm_patches
@@ -46,17 +50,25 @@ class CanonicalDataset(Dataset):
 
     @staticmethod
     def get_folder(patch):
+        """
+        Retrieves the directory from which the patch originated.
+        The directories which contain maps are numerical.
+        """
         map_dir = patch.origin_map
         dir_path = os.path.dirname(map_dir)
 
-        # Split the directory path into a list of subdirectories
         subdirs = dir_path.split(os.path.sep)
 
-        # Retrieve the last subdirectory
         return int(subdirs[-1])
 
     @staticmethod
     def get_osm_patch_dict(osm_maps_dir, patch_width):
+        """"
+        Creates a dictionary, based on the OSM maps stored in osm_maps_dir.
+        The key is the OSM map name (numerical, corresponding to directory names of the historical maps;
+        for example, the OSM map corresponding to region 57 is named 57.png).
+        The value will be a list of MapPatch objects, the patches of the OSM map, which ahve width patch_width..
+        """
 
         osm_patch_dict = {}
 
@@ -73,7 +85,11 @@ class CanonicalDataset(Dataset):
 
     @classmethod
     def from_dir(cls, patch_dataset_dir, osm_maps_dir, debug=False):
-        patch_dataset = None
+        """
+        Generates a CanonicalDataset, based on the direcotry where a CLPatchDatset is stored,
+        and the directory where OSM maps are stored.
+        For each patch in the CLPatchDatset, generates a positive pair with the corresponding patch in OSM style.
+        """
 
         logging.info(f"Fetching original patch dataset from {patch_dataset_dir}")
         with open(patch_dataset_dir, "rb") as f:
