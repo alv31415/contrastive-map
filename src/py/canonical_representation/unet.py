@@ -153,7 +153,7 @@ class UNet(nn.Module):
     def from_checkpoint(cls, checkpoint_dir, model, model_kwargs=None, use_resnet=True):
 
         logging.info(f"Loading model from checkpoint: {checkpoint_dir}")
-        checkpoint = torch.load(checkpoint_dir, map_location=torch.device('cpu'))
+        checkpoint = torch.load(checkpoint_dir, map_location=torch.device("cpu"))
 
         try:
             if "model_kwargs" in checkpoint:
@@ -300,13 +300,13 @@ class UNet(nn.Module):
                         avg_loss = np.mean(batch_losses[-20:])
                         avg_batch_losses_20.append(avg_loss)
                         logging.info(
-                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Training Loss = {avg_loss}")
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- Reconstruction Training Loss = {avg_loss}")
 
                         if batch % (len(train_loader) // (batch_log_rate // 4) + 1) == 0:
                             validation_loss = self.get_validation_loss(validation_loader)
                             validation_losses.append(validation_loss)
                             logging.info(
-                                f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Validation Loss = {validation_loss}")
+                                f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- Reconstruction Validation Loss = {validation_loss}")
 
                         self.update_checkpoint(checkpoint_dir=checkpoint_dir,
                                                batch_losses=batch_losses,
