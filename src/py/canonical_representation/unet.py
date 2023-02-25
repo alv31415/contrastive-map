@@ -315,7 +315,7 @@ class UNet(nn.Module):
                             f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- Reconstruction Training Loss = {avg_loss}")
 
                         if batch % (len(train_loader) // (batch_log_rate // 4) + 1) == 0:
-                            validation_loss = self.get_validation_loss(validation_loader)
+                            validation_loss = self.evaluate(evaluation_loader = validation_loader, validation=True)
                             validation_losses.append(validation_loss)
                             logging.info(
                                 f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- Reconstruction Validation Loss = {validation_loss}")
