@@ -22,9 +22,9 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 
-from canonical_dataset import CanonicalDataset
+from src.py.canonical_representation.canonical_dataset import CanonicalDataset
 from src.py.patch_dataset import CLPatchDataset
-from unet import UNet
+from src.py.canonical_representation.unet import UNet
 from src.py.byol import MapBYOL
 from src.py.simclr import MapSIMCLR
 
