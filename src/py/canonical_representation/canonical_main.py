@@ -1,11 +1,6 @@
 import os
 import sys
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-
-logging.info(parent_dir)
-
 sys.path.append(parent_dir)
 
 import logging
@@ -30,6 +25,11 @@ logging.info(f"Running main & importing modules...")
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+
+logging.info(parent_dir)
 
 from src.py.canonical_representation.canonical_dataset import CanonicalDataset
 from src.py.patch_dataset import CLPatchDataset
