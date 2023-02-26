@@ -18,8 +18,8 @@ import torch.optim as optim
 import torchvision.transforms as T
 import torch.nn.functional as F
 
-from mlp import MLP
-from encoder_projector_nn import EncoderProjectorNN
+from src.py.mlp import MLP
+from src.py.encoder_projector_nn import EncoderProjectorNN
 
 class MapSIMCLR(nn.Module):
     def __init__(self, encoder, encoder_parameters, projector_parameters, tau):

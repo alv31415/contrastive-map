@@ -14,7 +14,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)-4s %(message)s',
 
 from torch.utils.data import Dataset
 
-from map_patch import MapPatch
+from src.py.map_patch import MapPatch
 
 class CLPatchDataset(Dataset):
     def __init__(self, X_1, X_2, removed_patches = None):

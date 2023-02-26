@@ -1,6 +1,5 @@
 from datetime import datetime
 from copy import deepcopy
-import time
 import os
 import pickle as pk
 import logging
@@ -20,10 +19,8 @@ import torch.optim as optim
 import torchvision.transforms as T
 import torch.nn.functional as F
 
-from mlp import MLP
-from encoder_projector_nn import EncoderProjectorNN
-from datetime import datetime
-
+from src.py.mlp import MLP
+from src.py.encoder_projector_nn import EncoderProjectorNN
 
 class MapBYOL(nn.Module):
     """
