@@ -19,10 +19,8 @@ logging.getLogger("matplotlib").setLevel(logging.WARNING)
 logging.info(f"Running main & importing modules...")
 
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
-from torchvision.models.resnet import resnet18, ResNet18_Weights, resnet34, ResNet34_Weights, resnet50, ResNet50_Weights
 
 from canonical_dataset import CanonicalDataset
 from src.py.patch_dataset import CLPatchDataset

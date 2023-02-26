@@ -10,7 +10,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)-4s %(message)s',
                     level=logging.INFO,
                     datefmt='%d-%m-%Y %H:%M:%S')
 
-from PIL import Image
 import numpy as np
 
 import torch
