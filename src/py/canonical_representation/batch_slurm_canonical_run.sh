@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-%A_%a.out
-#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
+#SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/canonical_representation/slurm_logs/slurm-%A_%a.out
+#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/canonical_representation/slurm_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=1
 #SBATCH --nodelist=landonia24
 #SBATCH --gres=gpu:1
@@ -53,7 +53,7 @@ echo "________________________________________"
 echo "Creating directory in scratch disk: ${SCRATCH_DIR}"
 mkdir -p ${SCRATCH_DIR}
 
-SCRATCH_DATA_DIR=${SCRATCH_DIR}/data
+SCRATCH_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
 SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
 
 EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
@@ -79,7 +79,7 @@ echo "Running canonical_main.py according to experiments from ${EXPERIMENT_FILE}
 COMMAND="`sed \"${SLURM_ARRAY_TASK_ID}q;d\" ${EXPERIMENT_FILE}`"
 echo "Running provided command: ${COMMAND}"
 eval "${COMMAND}"
-echo "Command ran succesfully."
+echo "Command ran successfully."
 
 echo "________________________________________"
 
@@ -91,4 +91,4 @@ rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_
 echo "________________________________________"
 
 END=$(date "+%d/%m/%Y %H:%M:%S")
-echo "Job completed succesfully at ${END}"
+echo "Job completed successfully at ${END}"
