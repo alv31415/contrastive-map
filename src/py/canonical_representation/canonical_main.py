@@ -28,7 +28,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 logging.info(current_dir)
 
-parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+parent_dir = current_dir[:current_dir.index("src")]
 
 logging.info(parent_dir)
 
