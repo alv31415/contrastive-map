@@ -32,6 +32,8 @@ parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
 logging.info(parent_dir)
 
+sys.path.append(parent_dir)
+
 from src.py.canonical_representation.canonical_dataset import CanonicalDataset
 from src.py.patch_dataset import CLPatchDataset
 from src.py.canonical_representation.unet import UNet
