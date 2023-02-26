@@ -12,13 +12,11 @@ def get_parser():
     parser.add_argument("--scratch-out-dir", required=True,
                         help="path to the output folder in SLURM during training.")
     parser.add_argument("--patch-dataset-dir", required=True, help="Path to the data used to generate a patch dataset")
-    parser.add_argument("--checkpoint-dir", required=True,
-                        help="Path to the checkpoint containing the contrastive model")
 
     return parser
 
 
-def get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir, checkpoint_dir):
+def get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir):
     return {
         "--batch-size": 32,
         "--patch-size": 64,
@@ -31,15 +29,15 @@ def get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir, chec
         "--input": scratch_data_dir,
         "--output": scratch_out_dir,
         "--patch-dataset-dir": patch_data_dir,
-        "--checkpoint-dir": checkpoint_dir,
+        "--checkpoint-dir": None,
         "--use-byol": True,
         "--use-contrastive-output": True,
         "--loss" : "MSE"
     }
 
 
-def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_data_dir, checkpoint_dir, experiment_args):
-    arg_dict = get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir, checkpoint_dir)
+def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_data_dir, experiment_args):
+    arg_dict = get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir)
 
     for arg, value in experiment_args.items():
         if arg in arg_dict:
@@ -50,6 +48,9 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_data_d
                 arg_dict[arg] = value
         else:
             raise ValueError(f"The provided argument {arg} isn't a valid experiment argument.")
+
+    if arg_dict["checkpoint-dir"] is None:
+        raise ValueError(f"checkpoint-dir key in argument dict is mandatory; a contrastive model is required.")
 
     python_call = f"python {main_file}"
 
@@ -72,7 +73,6 @@ def main(args):
                                              scratch_data_dir=args.scratch_data_dir,
                                              scratch_out_dir=args.scratch_out_dir,
                                              patch_data_dir=args.patch_data_dir,
-                                             checkpoint_dir=args.checkpoint_dir,
                                              experiment_args=experiment_args) + "\n"
                            for experiment_args in experiment_argss]
 
