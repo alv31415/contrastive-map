@@ -74,7 +74,6 @@ def get_parser():
     parser.add_argument("--checkpoint-dir", required=True, help="Path to the checkpoint containing the contrastive model")
     parser.add_argument("--input", required=True, help="Path to the input data for the model to read")
     parser.add_argument("--output", required=True, help="Path to the directory to write output to")
-    parser.add_argument("--experiment-name", required=True, help="name of experiment, to store logs and outputs")
 
     parser.add_argument("--loss", choices=["MSE", "L1"],
                         help="type of loss to use (out of MSE and L1)")
