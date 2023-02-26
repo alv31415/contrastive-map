@@ -59,7 +59,7 @@ def get_parser():
 
     # I/O params
     parser.add_argument("--patch-dataset-dir", required=True, help="Path to the data used to generate a patch dataset")
-    parser.add_argument("--checkpoint-dir", required=True, help="Patch to the checkpoint containing the contrastive model")
+    parser.add_argument("--checkpoint-dir", required=True, help="Path to the checkpoint containing the contrastive model")
     parser.add_argument("--input", required=True, help="Path to the input data for the model to read")
     parser.add_argument("--output", required=True, help="Path to the directory to write output to")
     parser.add_argument("--experiment-name", required=True, help="name of experiment, to store logs and outputs")
