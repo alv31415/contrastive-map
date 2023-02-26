@@ -36,8 +36,8 @@ def get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir):
     }
 
 
-def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_data_dir, experiment_args):
-    arg_dict = get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir)
+def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_dataset_dir, experiment_args):
+    arg_dict = get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_dataset_dir)
 
     for arg, value in experiment_args.items():
         if arg in arg_dict:
@@ -49,7 +49,7 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_data_d
         else:
             raise ValueError(f"The provided argument {arg} isn't a valid experiment argument.")
 
-    if arg_dict["checkpoint-dir"] is None:
+    if arg_dict["--checkpoint-dir"] is None:
         raise ValueError(f"checkpoint-dir key in argument dict is mandatory; a contrastive model is required.")
 
     python_call = f"python {main_file}"
@@ -67,12 +67,27 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_data_d
 
 def main(args):
 
-    experiment_argss = [{"--epochs": 5, "--encoder": "cnn", "--encoder-layer-idx": -1, "--patch-size": 128}]
+    experiment_argss = [
+        {
+            "--batch-size": 32,
+            "--patch-size": 128,
+            "--epochs": 5,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 500,
+            "--save-reconstruction-interval": 250,
+            "--train-proportion": 0.98,
+            "--checkpoint-dir": "output/s-presnet18-e5-b32-t0_99-p128",
+            "--use-byol": False,
+            "--use-contrastive-output": False,
+            "--loss": "MSE"
+        }
+    ]
 
     experiment_run_args = [create_experiment(main_file=args.main,
                                              scratch_data_dir=args.scratch_data_dir,
                                              scratch_out_dir=args.scratch_out_dir,
-                                             patch_data_dir=args.patch_data_dir,
+                                             patch_dataset_dir=args.patch_dataset_dir,
                                              experiment_args=experiment_args) + "\n"
                            for experiment_args in experiment_argss]
 
