@@ -4,6 +4,8 @@ import sys
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
+logging.info(parent_dir)
+
 sys.path.append(parent_dir)
 
 import logging
