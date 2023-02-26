@@ -28,10 +28,12 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 logging.info(current_dir)
 
-parent_dir = current_dir[:current_dir.index("src")]
+grandparent_dir = current_dir[:current_dir.index("src")]
+parent_dir = current_dir[:current_dir.index("py")]
 
 logging.info(parent_dir)
 
+sys.path.append(grandparent_dir)
 sys.path.append(parent_dir)
 
 from src.py.canonical_representation.canonical_dataset import CanonicalDataset
