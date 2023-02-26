@@ -78,7 +78,9 @@ def main(args):
             "--log-interval": 500,
             "--save-reconstruction-interval": 250,
             "--train-proportion": 0.98,
-            "--checkpoint-dir": os.path.join(args.scratch_out_dir, "s-presnet18-e5-b32-t0_99-p128"),
+            "--checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                             "s-presnet18-e5-b32-t0_99-p128",
+                                             "simclr_checkpoint.pt"),
             "--use-byol": False,
             "--use-contrastive-output": False,
             "--loss": "MSE"
