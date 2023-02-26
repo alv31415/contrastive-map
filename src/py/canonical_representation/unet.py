@@ -64,29 +64,20 @@ class Upsampler(nn.Module):
 
 
 class UNet(nn.Module):
-    def __init__(self, contrastive_model=None):
+    def __init__(self, contrastive_model=None, use_contrastive_output=True):
         super(UNet, self).__init__()
         self.contrastive_model = contrastive_model
+        self.contrastive_model_type = type(contrastive_model)
+        self.use_contrastive_output = use_contrastive_output
 
         self.MAX_PIXEL_VALUE = 255
         self.RESNET_DIM = 224
 
-
         self.kwargs = {"contrastive_model": contrastive_model}
         self.use_contrastive_model = False
 
-        # freeze contrastive model, we don't want to train it, just encode images
-        if contrastive_model is not None:
-            self.use_contrastive_model = True
-            self.contrastive_img_width = 8
-            self.contrastive_hidden_dim = 512
-            self.contrastive_bottleneck = nn.Linear(in_features=self.contrastive_hidden_dim,
-                                                    out_features=self.contrastive_img_width
-                                                                 * self.contrastive_img_width
-                                                                 * self.contrastive_hidden_dim)
-
-            for param in contrastive_model.parameters():
-                param.requires_grad = False
+        if self.contrastive_model is not None:
+            self.set_contrastive_model()
 
         self.input = None if self.use_contrastive_model else DoubleConv(in_channels=3, out_channels=64)
         self.downsampler1 = None if self.use_contrastive_model else Downsampler(in_channels=64, out_channels=128)
@@ -104,7 +95,8 @@ class UNet(nn.Module):
         self.criterion = None
         self.optimiser = None
 
-        self.test_imgs = None
+        self.historical_imgs = None
+        self.canonical_imgs = None
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -123,12 +115,7 @@ class UNet(nn.Module):
 
     def forward(self, x):
         if self.use_contrastive_model:
-            x_down = self.contrastive_model(x)
-            x_down = self.contrastive_bottleneck(x_down)
-            x_down = x_down.view(-1,
-                                 self.contrastive_hidden_dim,
-                                 self.contrastive_img_width,
-                                 self.contrastive_img_width)
+            x_down = self.get_bottleneck(x)
             x_up = self.upsampler1(x_down, None)
             x_up = self.upsampler2(x_up, None)
             x_up = self.upsampler3(x_up, None)
@@ -149,8 +136,75 @@ class UNet(nn.Module):
         # move colour channel back to the last dimension
         return torch.movedim(x_up, 1, -1)
 
+    def get_bottleneck(self, x):
+        """
+        We provide 2 methods to compute the bottleneck in UNET, provided that we use the contrastive model as an encoder.
+        If self.use_contrastive_output is True, then we pass the input image through self.contrastive_model, resulting in a 512-dimensional vector.
+        In this case, we apply a single linear layer, to obtain a 512*8*8-dimensional vector, which then gets reshaped to have shape (512,8,8).
+        Alternatively, we can exploit the fact that ResNET (which is the encoder of choice for self.contrastive_model) already computes feature maps.
+        However, since it assumes an input of dimensions 224 x 244, the last set of feature maps will have shape (512,7,7).
+        In this case, we perform upsampling, to obtain feature maps of shape (512,8,8).
+        The objective of this function is to homogenise both these behaviours into a single function,
+        which given an input outputs a tensor with shape (512,512,8) to be upsampled by the network.
+        """
+
+        x_down = self.contrastive_model(x)
+
+        if self.use_contrastive_output:
+            x_down = self.contrastive_bottleneck(x_down)
+            x_down = x_down.view(-1,
+                                 self.contrastive_hidden_dim,
+                                 self.contrastive_img_width,
+                                 self.contrastive_img_width)
+        else:
+            modules = self.get_encoder_modules()
+
+            x_down = modules[-3].output
+
+            assert x_down.shape[1:] == (512, 7, 7)
+
+            x_down = F.interpolate(input_tensor,
+                                   size=(self.contrastive_img_width, self.contrastive_img_width),
+                                   mode="bilinear",
+                                   align_corners=False)
+
+        return x_down
+
+    def get_encoder_modules(self):
+        if isinstance(self.contrastive_model, MapSIMCLR):
+            modules = [*self.contrastive_model.model.encoder.children()]
+        elif isinstance(self.contrastive_model, MapBYOL):
+            modules = [*self.contrastive_model.online_network.encoder.children()]
+
+        return modules
+
+    def set_contrastive_model(self):
+
+        self.use_contrastive_model = True
+        self.contrastive_img_width = 8
+        self.contrastive_hidden_dim = 512
+
+        if self.use_contrastive_output:
+            self.contrastive_bottleneck = nn.Linear(in_features=self.contrastive_hidden_dim,
+                                                    out_features=self.contrastive_img_width
+                                                                 * self.contrastive_img_width
+                                                                 * self.contrastive_hidden_dim)
+        else:
+            self.contrastive_bottleneck = nn.Identity()
+
+        # freeze contrastive model, we don't want to train it, just encode images
+        for param in self.contrastive_model.parameters():
+            param.requires_grad = False
+
+        for module in self.get_encoder_modules():
+            module.register_forward_hook(UNet.hook_fn)
+
+    @staticmethod
+    def hook_fn(module, _, output):
+        module.output = output
+
     @classmethod
-    def from_checkpoint(cls, checkpoint_dir, model, model_kwargs=None, use_resnet=True):
+    def from_checkpoint(cls, checkpoint_dir, model, model_kwargs=None, use_resnet=True, use_contrastive_output=True):
 
         logging.info(f"Loading model from checkpoint: {checkpoint_dir}")
         checkpoint = torch.load(checkpoint_dir, map_location=torch.device("cpu"))
@@ -179,19 +233,18 @@ class UNet(nn.Module):
 
         return cls(cl_model)
 
-    def compile_model(self, test_imgs = None, loss_str = "MSE", optimiser = optim.Adam, **optim_kwargs):
+    def compile_model(self, historical_imgs, canonical_imgs, loss_str="MSE", optimiser=optim.Adam, **optim_kwargs):
 
-        if test_imgs is None:
-            self.test_imgs = (torch.rand(1,128,128,3) * self.MAX_PIXEL_VALUE).int()
-        else:
-            self.test_imgs = test_imgs
+        self.historical_imgs = historical_imgs.int()
+        self.canonical_imgs = canonical_imgs.int()
 
         if loss_str == "MSE":
             self.criterion = nn.MSELoss()
         elif loss_str == "L1":
             self.criterion = nn.L1Loss()
         else:
-            logging.info(f"Provided loss string '{loss_str}' is invalid (must be one of 'MSE' or 'L1'. Defaulting to MSE loss.")
+            logging.info(
+                f"Provided loss string '{loss_str}' is invalid (must be one of 'MSE' or 'L1'. Defaulting to MSE loss.")
 
         self.optimiser = optimiser(self.parameters(), **optim_kwargs)
 
@@ -214,7 +267,7 @@ class UNet(nn.Module):
         for original, target in evaluation_loader:
             original, target = original.to(self.device), self.norm_img(target).to(self.device)
             reconstruction = self(original)
-            eval_losses.append(self.get_loss(reconstruction = reconstruction, target = target).cpu())
+            eval_losses.append(self.get_loss(reconstruction=reconstruction, target=target).cpu())
 
             del original
             del target
@@ -226,6 +279,7 @@ class UNet(nn.Module):
 
         return eval_losses
 
+    @torch.no_grad()
     def update_checkpoint(self, checkpoint_dir, batch_losses, validation_losses, **checkpoint_data):
         """
         Updates the checkpoint dictionary.
@@ -248,7 +302,7 @@ class UNet(nn.Module):
                 pk.dump(batch_losses, f)
 
             batch_loss_validation_dir = os.path.join(checkpoint_dir,
-                                                f"batch_loss_logs_v{checkpoint_data.get('epoch', 0)}.pk")
+                                                     f"batch_loss_logs_v{checkpoint_data.get('epoch', 0)}.pk")
             with open(batch_loss_validation_dir, "wb") as f:
                 pk.dump(validation_losses, f)
 
@@ -261,17 +315,32 @@ class UNet(nn.Module):
             os.makedirs(reconstruction_dir)
 
         self.to(self.device)
-        test_imgs = self.test_imgs.to(self.device)
+        historical_imgs = self.historical_imgs.to(self.device)
 
-        reconstructions = self(test_imgs)
+        reconstructions = self(historical_imgs)
+        reconstructions = np.round(np.array(reconstructions.cpu()) * self.MAX_PIXEL_VALUE).astype(np.uint8)
 
-        for i, reconstruction in enumerate(reconstructions):
-            with open(os.path.join(reconstruction_dir, f"{i}_b{batch}_e{epoch}.png"), "wb") as f:
-                # PIL can't save images with pixels between 0 and 1
-                save_img = np.round(np.array(reconstruction.cpu()) * self.MAX_PIXEL_VALUE).astype(np.uint8)
-                Image.fromarray(save_img).save(f)
+        cols = len(reconstructions) if len(reconstructions) <= 5 else 5
+        w = 2
+        fig, ax = plt.subplots(3, cols, figsize=(w * cols, w * 3))
 
-        del test_imgs
+        for i, ax_ in enumerate(ax[0]):
+            ax_.imshow(self.historical_imgs[i])
+            ax_.axis("off")
+
+        for i, ax_ in enumerate(ax[1]):
+            ax_.imshow(reconstructions[i])
+            ax_.axis("off")
+
+        for i, ax_ in enumerate(ax[2]):
+            ax_.imshow(self.canonical_imgs[i])
+            ax_.axis("off")
+
+        fig.subplots_adjust(wspace=0.05, hspace=0.05)
+
+        plt.savefig(os.path.join(reconstruction_dir, f"b{batch}_e{epoch}.png"), bbox_inches="tight")
+
+        del historical_imgs
 
     def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, batch_log_rate=100,
                     save_reconstruction_interval=100):
@@ -280,7 +349,8 @@ class UNet(nn.Module):
         """
 
         if self.criterion is None or self.optimiser is None:
-            logging.warning("Can't train if the optimiser or loss haven't been set. Please run model.compile_model first.")
+            logging.warning(
+                "Can't train if the optimiser or loss haven't been set. Please run model.compile_model first.")
             return None
 
         self.to(self.device)
@@ -297,7 +367,7 @@ class UNet(nn.Module):
                 original, target = original.to(self.device), self.norm_img(target).to(self.device)
                 reconstruction = self(original)
 
-                loss = self.get_loss(reconstruction = reconstruction, target = target)
+                loss = self.get_loss(reconstruction=reconstruction, target=target)
 
                 batch_losses.append(loss.cpu().detach())
 
@@ -305,7 +375,7 @@ class UNet(nn.Module):
                 self.optimiser.step()
 
                 if batch % save_reconstruction_interval == 0:
-                    self.save_reconstructions(checkpoint_dir = checkpoint_dir, epoch = epoch, batch = batch)
+                    self.save_reconstructions(checkpoint_dir=checkpoint_dir, epoch=epoch, batch=batch)
 
                 if batch % (len(train_loader) // batch_log_rate + 1) == 0 and batch != 0:
                     with torch.no_grad():
@@ -315,7 +385,7 @@ class UNet(nn.Module):
                             f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- Reconstruction Training Loss = {avg_loss}")
 
                         if batch % (len(train_loader) // (batch_log_rate // 4) + 1) == 0:
-                            validation_loss = self.evaluate(evaluation_loader = validation_loader, validation=True)
+                            validation_loss = self.evaluate(evaluation_loader=validation_loader, validation=True)
                             validation_losses.append(validation_loss)
                             logging.info(
                                 f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- Reconstruction Validation Loss = {validation_loss}")
