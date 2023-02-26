@@ -1,8 +1,6 @@
 import os
 import sys
 
-sys.path.append(parent_dir)
-
 import logging
 import pickle as pk
 import argparse
