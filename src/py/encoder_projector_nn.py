@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from hook import Hook
+from src.py.hook import Hook
 
 class EncoderProjectorNN(nn.Module):
     """
