@@ -27,6 +27,9 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
+
+logging.info(current_dir)
+
 parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
 logging.info(parent_dir)
