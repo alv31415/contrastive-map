@@ -3,7 +3,7 @@ set -e
 
 # gather the files & directories to use
 STUDENT_ID=$(whoami)
-EXPERIMENT_DIR=/home/${STUDENT_ID}/honours-project/contrastive-map/src/py/canonical_representation
+EXPERIMENT_DIR=/home/${STUDENT_ID}/honours-project/contrastive-map/src/py
 
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 SCRATCH_PATCH_DATA_DIR=${SCRATCH_DIR}/data
