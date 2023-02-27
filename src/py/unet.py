@@ -272,6 +272,11 @@ class UNet(nn.Module):
             out_img = img / self.MAX_PIXEL_VALUE
 
         if self.grayscale_output:
+            if len(out_img.shape) == 3:
+                out_img = torch.moveaxis(img, -1, 0)
+            else:
+                out_img = torch.moveaxis(out_img, -1, 1)
+
             out_img = T.Grayscale(num_output_channels=1)(out_img)
 
         return out_img
