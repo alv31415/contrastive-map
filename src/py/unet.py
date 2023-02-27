@@ -74,10 +74,14 @@ class UNet(nn.Module):
         self.contrastive_model_type = type(contrastive_model)
         self.use_contrastive_output = use_contrastive_output
 
+        logging.info(f"Using contrastive model {type(self.contrastive_model)}")
+        logging.info(f"Using contrastive output: {self.use_contrastive_output}")
+
         self.MAX_PIXEL_VALUE = 255
         self.RESNET_DIM = 224
 
-        self.kwargs = {"contrastive_model": contrastive_model}
+        self.kwargs = {"contrastive_model": contrastive_model,
+                       "use_contrastive_output": use_contrastive_output}
         self.use_contrastive_model = False
 
         if self.contrastive_model is not None:
