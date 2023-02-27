@@ -48,8 +48,8 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_datase
             if type(value) == bool:
                 if not value:
                     arg_dict.pop(arg)
-            else:
-                arg_dict[arg] = value
+
+            arg_dict[arg] = value
         else:
             raise ValueError(f"The provided argument {arg} isn't a valid experiment argument.")
 
