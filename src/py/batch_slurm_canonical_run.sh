@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --output=/home/%u/honours-project/contrastive-map/src/pyslurm_logs/slurm-%A_%a.out
-#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
+#SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/canonical_logs/slurm-%A_%a.out
+#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/canonical_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=1
 #SBATCH --nodelist=landonia24
 #SBATCH --gres=gpu:1
@@ -57,7 +57,7 @@ SCRATCH_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
 SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
 
 EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
-SLURM_OUT_DIR=${EXPERIMENT_DIR}/slurm_logs
+SLURM_OUT_DIR=${EXPERIMENT_DIR}/slurm_logs/canonical_logs
 
 mkdir -p ${SCRATCH_DATA_DIR}
 mkdir -p ${SCRATCH_OUT_DIR}
