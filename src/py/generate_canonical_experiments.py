@@ -33,7 +33,7 @@ def get_default_arg_dict(scratch_data_dir, patch_data_dir):
         "--experiment-name": None,
         "--use-byol": True,
         "--use-contrastive-output": True,
-        "--loss" : "MSE"
+        "--loss": "MSE"
     }
 
 def get_experiment_name(epochs, batch_size, patch_size, use_contrastive_output, loss):
@@ -58,7 +58,7 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_datase
     arg_dict["--experiment-name"] = get_experiment_name(epochs=arg_dict["--epochs"],
                                                         batch_size=arg_dict["--batch-size"],
                                                         patch_size=arg_dict["--patch-size"],
-                                                        use_contrastive_output=arg_dict["--use-contrastive-output"],
+                                                        use_contrastive_output=arg_dict.get("--use-contrastive-output", False),
                                                         loss=arg_dict["--loss"])
 
     python_call = f"python {main_file}"
