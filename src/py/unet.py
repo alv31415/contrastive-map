@@ -17,6 +17,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+import torchvision.transforms as T
 
 from simclr import MapSIMCLR
 from byol import MapBYOL
@@ -68,11 +69,12 @@ class Upsampler(nn.Module):
 
 
 class UNet(nn.Module):
-    def __init__(self, contrastive_model=None, use_contrastive_output=True):
+    def __init__(self, contrastive_model=None, use_contrastive_output=True, grayscale_output=False):
         super(UNet, self).__init__()
         self.contrastive_model = contrastive_model
         self.contrastive_model_type = type(contrastive_model)
         self.use_contrastive_output = use_contrastive_output
+        self.grayscale_output = grayscale_output
 
         logging.info(f"Using contrastive model {type(self.contrastive_model)}")
         logging.info(f"Using contrastive output: {self.use_contrastive_output}")
@@ -81,7 +83,8 @@ class UNet(nn.Module):
         self.RESNET_DIM = 224
 
         self.kwargs = {"contrastive_model": contrastive_model,
-                       "use_contrastive_output": use_contrastive_output}
+                       "use_contrastive_output": use_contrastive_output,
+                       "grayscale_output": grayscale_output}
         self.use_contrastive_model = False
 
         if self.contrastive_model is not None:
@@ -97,7 +100,7 @@ class UNet(nn.Module):
         self.upsampler2 = Upsampler(in_channels=256, out_channels=128, use_contrastive_model=self.use_contrastive_model)
         self.upsampler3 = Upsampler(in_channels=128, out_channels=64, use_contrastive_model=self.use_contrastive_model)
         self.upsampler4 = Upsampler(in_channels=64, out_channels=32, use_contrastive_model=self.use_contrastive_model)
-        self.output = nn.Sequential(nn.Conv2d(in_channels=32, out_channels=3, kernel_size=1),
+        self.output = nn.Sequential(nn.Conv2d(in_channels=32, out_channels=1 if self.grayscale_output else 3, kernel_size=1),
                                     nn.Sigmoid())
 
         self.criterion = None
@@ -214,7 +217,11 @@ class UNet(nn.Module):
         module.output = output
 
     @classmethod
-    def from_checkpoint(cls, checkpoint_dir, model, model_kwargs=None, use_resnet=True, use_contrastive_output=True):
+    def from_checkpoint(cls, checkpoint_dir, model,
+                        model_kwargs=None,
+                        use_resnet=True,
+                        use_contrastive_output=True,
+                        grayscale_output=False):
 
         logging.info(f"Loading model from checkpoint: {checkpoint_dir}")
         checkpoint = torch.load(checkpoint_dir, map_location=torch.device("cpu"))
@@ -241,7 +248,7 @@ class UNet(nn.Module):
         logging.info("Model loaded and set to evaluation mode")
         cl_model.eval()
 
-        return cls(cl_model, use_contrastive_output)
+        return cls(cl_model, use_contrastive_output, grayscale_output)
 
     def compile_model(self, historical_imgs, canonical_imgs, loss_str="MSE", optimiser=optim.Adam, **optim_kwargs):
 
@@ -259,10 +266,15 @@ class UNet(nn.Module):
         self.optimiser = optimiser(self.parameters(), **optim_kwargs)
 
     def norm_img(self, img):
-        if torch.max(img) > 1:
-            return img / self.MAX_PIXEL_VALUE
+        out_img = img
 
-        return img
+        if torch.max(img) > 1:
+            out_img = img / self.MAX_PIXEL_VALUE
+
+        if self.grayscale_output:
+            out_img = T.Grayscale(num_output_channels=1)(out_img)
+
+        return out_img
 
     def get_loss(self, reconstruction, target):
         return self.criterion(reconstruction, target)

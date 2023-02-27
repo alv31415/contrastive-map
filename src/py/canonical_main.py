@@ -55,6 +55,9 @@ def get_parser():
                         help="if present, uses BYOL model, otherwise SimCLR")
     parser.add_argument("--use-contrastive-output", action='store_true', default=False,
                         help="if present, uses embedding of vector as output. Otherwise, uses last set of feature maps.")
+    parser.add_argument("--grayscale", action='store_true', default=False,
+                        help="if present, output will be grayscale image")
+
 
     # I/O params
     parser.add_argument("--patch-dataset-dir", required=True, help="Path to the data used to generate a patch dataset")
@@ -138,7 +141,8 @@ def main(args):
     unet = UNet.from_checkpoint(checkpoint_dir = args.contrastive_checkpoint_dir,
                                 model = MapBYOL if args.use_byol else MapSIMCLR,
                                 model_kwargs=None, use_resnet=True,
-                                use_contrastive_output=args.use_contrastive_output)
+                                use_contrastive_output=args.use_contrastive_output,
+                                grayscale_output=args.grayscale)
 
     idxs = [3, 748, 9287, 198080, 57]
     historical_imgs = [torch.Tensor(canonical_train_dataset.historical_patches[i].patch) for i in idxs]
