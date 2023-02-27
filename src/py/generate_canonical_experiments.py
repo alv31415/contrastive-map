@@ -48,8 +48,10 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_datase
             if type(value) == bool:
                 if not value:
                     arg_dict.pop(arg)
-
-            arg_dict[arg] = value
+                else:
+                    arg_dict[arg] = value
+            else:
+                arg_dict[arg] = value
         else:
             raise ValueError(f"The provided argument {arg} isn't a valid experiment argument.")
 
@@ -84,7 +86,24 @@ def main(args):
             "--epochs": 5,
             "--lr": 1e-3,
             "--seed": 23,
-            "--log-interval": 500,
+            "--log-interval": 250,
+            "--save-reconstruction-interval": 250,
+            "--train-proportion": 0.98,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "s-presnet18-e5-b32-t0_99-p128",
+                                                         "simclr_checkpoint.pt"),
+            "--use-byol": False,
+            "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+        },
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": 5,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 250,
             "--save-reconstruction-interval": 250,
             "--train-proportion": 0.98,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
@@ -101,7 +120,7 @@ def main(args):
             "--epochs": 5,
             "--lr": 1e-3,
             "--seed": 23,
-            "--log-interval": 500,
+            "--log-interval": 250,
             "--save-reconstruction-interval": 250,
             "--train-proportion": 0.98,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
