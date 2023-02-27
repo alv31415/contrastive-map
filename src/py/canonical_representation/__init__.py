@@ -1,2 +1,0 @@
-from src.py.canonical_representation.canonical_dataset import CanonicalDataset
-from src.py.canonical_representation.unet import UNet

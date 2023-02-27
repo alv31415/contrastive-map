@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/canonical_representation/slurm_logs/slurm-%A_%a.out
-#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/canonical_representation/slurm_logs/slurm-err-%A_%a.out
+#SBATCH --output=/home/%u/honours-project/contrastive-map/src/pyslurm_logs/slurm-%A_%a.out
+#SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=1
 #SBATCH --nodelist=landonia24
 #SBATCH --gres=gpu:1
@@ -30,7 +30,7 @@ echo "________________________________________"
 # define main directories
 HOME_DIR=/home/${STUDENT_ID}/honours-project
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
-EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py/canonical_representation
+EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
 DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals/osm_carto
 EXPERIMENT_FILE=${EXPERIMENT_DIR}/canonical_experiments.txt
 

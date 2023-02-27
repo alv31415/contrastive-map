@@ -37,7 +37,7 @@ sys.path.append(grandparent_dir)
 sys.path.append(parent_dir)
 
 from patch_dataset import CLPatchDataset
-from canonical_representation.unet import UNet
+from unet import UNet
 from byol import MapBYOL
 from simclr import MapSIMCLR
 from canonical_dataset import CanonicalDataset

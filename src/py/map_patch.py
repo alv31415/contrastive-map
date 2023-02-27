@@ -3,7 +3,7 @@ import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
-from patchify import patchify,unpatchify
+from patchify import patchify
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
