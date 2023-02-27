@@ -70,7 +70,7 @@ def main(args):
 
     experiment_argss = [
         {
-            "--batch-size": 32,
+            "--batch-size": 64,
             "--patch-size": 128,
             "--epochs": 5,
             "--lr": 1e-3,
@@ -83,6 +83,22 @@ def main(args):
                                              "simclr_checkpoint.pt"),
             "--use-byol": False,
             "--use-contrastive-output": False,
+            "--loss": "MSE"
+        },
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": 5,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 500,
+            "--save-reconstruction-interval": 250,
+            "--train-proportion": 0.98,
+            "--checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                             "s-presnet18-e5-b32-t0_99-p128",
+                                             "simclr_checkpoint.pt"),
+            "--use-byol": False,
+            "--use-contrastive-output": True,
             "--loss": "MSE"
         }
     ]

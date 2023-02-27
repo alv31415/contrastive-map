@@ -183,6 +183,8 @@ class UNet(nn.Module):
             modules = [*self.contrastive_model.model.encoder.children()]
         elif isinstance(self.contrastive_model, MapBYOL):
             modules = [*self.contrastive_model.online_network.encoder.children()]
+        else:
+            raise ValueError(f"Provided model is of type {type(self.contrastive_model)}, but expected one of MapSIMCLR or MapBYOL")
 
         return modules
 
@@ -239,7 +241,7 @@ class UNet(nn.Module):
         logging.info("Model loaded and set to evaluation mode")
         cl_model.eval()
 
-        return cls(cl_model)
+        return cls(cl_model, use_contrastive_output)
 
     def compile_model(self, historical_imgs, canonical_imgs, loss_str="MSE", optimiser=optim.Adam, **optim_kwargs):
 
