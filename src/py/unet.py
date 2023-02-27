@@ -236,10 +236,10 @@ class UNet(nn.Module):
                 cl_model = model(**model_kwargs)
             else:
                 cl_model = model(**model_kwargs)
-        except:
-            logging.info("No model was loaded. Invalid arguments provided")
-            logging.info(f"Kwargs provided: {model_kwargs}")
-            logging.info(f"Kwargs found in checkpoint: {checkpoint['model_kwargs']}")
+        except Exception as e:
+            logging.info(f"No model was loaded. Invalid arguments provided ({e})")
+            logging.info(f"Kwargs provided: {model_kwargs.keys()}")
+            logging.info(f"Kwargs found in checkpoint: {checkpoint['model_kwargs'].keys()}")
 
             return None
 
