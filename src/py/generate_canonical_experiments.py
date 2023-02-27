@@ -40,7 +40,7 @@ def get_experiment_name(epochs, batch_size, patch_size, use_contrastive_output, 
     return f"can-{'co' if use_contrastive_output else 'nco'}-{loss}-e{epochs}-b{batch_size}-p{patch_size}"
 
 def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_dataset_dir, experiment_args):
-    arg_dict = get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_dataset_dir)
+    arg_dict = get_default_arg_dict(scratch_data_dir, patch_dataset_dir)
 
     for arg, value in experiment_args.items():
         if arg in arg_dict:
