@@ -58,9 +58,9 @@ def get_parser():
 
     # I/O params
     parser.add_argument("--patch-dataset-dir", required=True, help="Path to the data used to generate a patch dataset")
-    parser.add_argument("--checkpoint-dir", required=True, help="Path to the checkpoint containing the contrastive model")
+    parser.add_argument("--contrastive-checkpoint-dir", required=True, help="Path to the checkpoint containing the contrastive model")
+    parser.add_argument("--experiment-name", required=True, help="Name of experiment")
     parser.add_argument("--input", required=True, help="Path to the input data for the model to read")
-    parser.add_argument("--output", required=True, help="Path to the directory to write output to")
 
     parser.add_argument("--loss", choices=["MSE", "L1"],
                         help="type of loss to use (out of MSE and L1)")
@@ -135,7 +135,7 @@ def main(args):
                                              shuffle = False,
                                              num_workers=4)
 
-    unet = UNet.from_checkpoint(checkpoint_dir = args.checkpoint_dir,
+    unet = UNet.from_checkpoint(checkpoint_dir = args.contrastive_checkpoint_dir,
                                 model = MapBYOL if args.use_byol else MapSIMCLR,
                                 model_kwargs=None, use_resnet=True,
                                 use_contrastive_output=args.use_contrastive_output)
@@ -152,14 +152,8 @@ def main(args):
                        optimiser = optim.Adam,
                        lr = args.lr)
 
-    def get_canonical_checkpoint_dir(checkpoint_dir):
-        dir_path = os.path.dirname(checkpoint_dir)
-
-        subdirs = dir_path.split(os.path.sep)
-
-        return subdirs[-1]
-
-    canonical_checkpoint_dir = os.path.join(args.output, f"can-{get_canonical_checkpoint_dir(args.checkpoint_dir)}")
+    checkpoint_parent = os.path.abspath(os.path.join(args.contrastive_checkpoint_dir, os.pardir))
+    canonical_checkpoint_dir = os.path.join(checkpoint_parent, args.experiment_name)
 
     logging.info(f"Saving checkpoints at {canonical_checkpoint_dir}")
     logging.info(f"Using device: {unet.device}")

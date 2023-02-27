@@ -17,7 +17,7 @@ def get_parser():
     return parser
 
 
-def get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir):
+def get_default_arg_dict(scratch_data_dir, patch_data_dir):
     return {
         "--batch-size": 32,
         "--patch-size": 64,
@@ -28,14 +28,16 @@ def get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_data_dir):
         "--save-reconstruction-interval": 250,
         "--train-proportion": 0.98,
         "--input": scratch_data_dir,
-        "--output": scratch_out_dir,
         "--patch-dataset-dir": patch_data_dir,
-        "--checkpoint-dir": None,
+        "--contrastive-checkpoint-dir": None,
+        "--experiment-name": None,
         "--use-byol": True,
         "--use-contrastive-output": True,
         "--loss" : "MSE"
     }
 
+def get_experiment_name(epochs, batch_size, patch_size, use_contrastive_output, loss):
+    return f"can-{'co' if use_contrastive_output else 'nco'}-{loss}-e{epochs}-b{batch_size}-p{patch_size}"
 
 def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_dataset_dir, experiment_args):
     arg_dict = get_default_arg_dict(scratch_data_dir, scratch_out_dir, patch_dataset_dir)
@@ -50,8 +52,14 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_datase
         else:
             raise ValueError(f"The provided argument {arg} isn't a valid experiment argument.")
 
-    if arg_dict["--checkpoint-dir"] is None:
-        raise ValueError(f"checkpoint-dir key in argument dict is mandatory; a contrastive model is required.")
+    if arg_dict["--contrastive-checkpoint-dir"] is None:
+        raise ValueError(f"contrastive-checkpoint-dir key in argument dict is mandatory; a contrastive model is required.")
+
+    arg_dict["--experiment-name"] = get_experiment_name(epochs=arg_dict["--epochs"],
+                                                        batch_size=arg_dict["--batch-size"],
+                                                        patch_size=arg_dict["--patch-size"],
+                                                        use_contrastive_output=arg_dict["--use-contrastive-output"],
+                                                        loss=arg_dict["--loss"])
 
     python_call = f"python {main_file}"
 
@@ -78,7 +86,7 @@ def main(args):
             "--log-interval": 500,
             "--save-reconstruction-interval": 250,
             "--train-proportion": 0.98,
-            "--checkpoint-dir": os.path.join(args.scratch_out_dir,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
                                              "s-presnet18-e5-b32-t0_99-p128",
                                              "simclr_checkpoint.pt"),
             "--use-byol": False,
@@ -94,7 +102,7 @@ def main(args):
             "--log-interval": 500,
             "--save-reconstruction-interval": 250,
             "--train-proportion": 0.98,
-            "--checkpoint-dir": os.path.join(args.scratch_out_dir,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
                                              "s-presnet18-e5-b32-t0_99-p128",
                                              "simclr_checkpoint.pt"),
             "--use-byol": False,
