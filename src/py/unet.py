@@ -11,10 +11,15 @@ logging.basicConfig(format='%(asctime)s %(levelname)-4s %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S')
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
+
+from simclr import MapSIMCLR
+from byol import MapBYOL
 
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -162,7 +167,7 @@ class UNet(nn.Module):
 
             assert x_down.shape[1:] == (512, 7, 7)
 
-            x_down = F.interpolate(input_tensor,
+            x_down = F.interpolate(x_down,
                                    size=(self.contrastive_img_width, self.contrastive_img_width),
                                    mode="bilinear",
                                    align_corners=False)
