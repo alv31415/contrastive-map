@@ -36,11 +36,11 @@ logging.info(parent_dir)
 sys.path.append(grandparent_dir)
 sys.path.append(parent_dir)
 
-from src.py.canonical_representation.canonical_dataset import CanonicalDataset
-from src.py.patch_dataset import CLPatchDataset
-from src.py.canonical_representation.unet import UNet
-from src.py.byol import MapBYOL
-from src.py.simclr import MapSIMCLR
+from patch_dataset import CLPatchDataset
+from canonical_representation.unet import UNet
+from byol import MapBYOL
+from simclr import MapSIMCLR
+from canonical_dataset import CanonicalDataset
 
 # --------------------------------------------------- PARSER ---------------------------------------------------
 
