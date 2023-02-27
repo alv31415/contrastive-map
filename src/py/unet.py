@@ -273,7 +273,7 @@ class UNet(nn.Module):
 
         if self.grayscale_output:
             if len(out_img.shape) == 3:
-                out_img = torch.moveaxis(img, -1, 0)
+                out_img = torch.moveaxis(out_img, -1, 0)
             else:
                 out_img = torch.moveaxis(out_img, -1, 1)
 
@@ -356,7 +356,10 @@ class UNet(nn.Module):
             ax_.axis("off")
 
         for i, ax_ in enumerate(ax[1]):
-            ax_.imshow(reconstructions[i])
+            if self.grayscale_output:
+                ax_.imshow(reconstructions[i], cmap = "gray")
+            else:
+                ax_.imshow(reconstructions[i])
             ax_.axis("off")
 
         for i, ax_ in enumerate(ax[2]):
