@@ -1,5 +1,4 @@
 import os
-import sys
 
 import logging
 import pickle as pk
@@ -23,18 +22,6 @@ logging.info(f"Running main & importing modules...")
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
-
-current_dir = os.path.dirname(os.path.realpath(__file__))
-
-logging.info(current_dir)
-
-grandparent_dir = current_dir[:current_dir.index("src")]
-parent_dir = current_dir[:current_dir.index("py")]
-
-logging.info(parent_dir)
-
-sys.path.append(grandparent_dir)
-sys.path.append(parent_dir)
 
 from patch_dataset import CLPatchDataset
 from unet import UNet

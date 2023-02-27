@@ -19,8 +19,8 @@ import torch.optim as optim
 import torchvision.transforms as T
 import torch.nn.functional as F
 
-from src.py.mlp import MLP
-from src.py.encoder_projector_nn import EncoderProjectorNN
+from mlp import MLP
+from encoder_projector_nn import EncoderProjectorNN
 
 class MapBYOL(nn.Module):
     """
