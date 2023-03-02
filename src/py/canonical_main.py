@@ -189,7 +189,8 @@ def main(args):
                                 use_contrastive_output=args.use_contrastive_output,
                                 grayscale_output=args.grayscale)
 
-    idxs = [3, 748, 9287, 198080, 57]
+    #idxs = [3, 748, 9287, 198080, 57]
+    idxs = [3, 57, 5381, 283, 23]
     historical_imgs = [torch.Tensor(canonical_train_dataset.historical_patches[i].patch) for i in idxs]
     historical_imgs = torch.stack(historical_imgs)
     canonical_imgs = [torch.Tensor(canonical_train_dataset.canonical_patches[i].patch) for i in idxs]
