@@ -116,7 +116,7 @@ def main(args):
             "--save-reconstruction-interval": 1000,
             "--train-proportion": 0.98,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "b-presnet34-e5-b32-t0_90-p128",
+                                                         "b-presnet18-e5-b32-t0_9-p64",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
             "--use-contrastive-output": False,
