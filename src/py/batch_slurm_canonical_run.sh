@@ -3,11 +3,11 @@
 #SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/canonical_logs/slurm-%A_%a.out
 #SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/canonical_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=1
-#SBATCH --nodelist=landonia24
+#SBATCH --nodelist=landonia23
 #SBATCH --gres=gpu:1
-#SBATCH --mem=14000
+#SBATCH --mem=16GB
 #SBATCH --cpus-per-task=4
-#SBATCH --time=1-12:00:00
+#SBATCH --time=3-08:00:00
 #SBATCH --partition=Teach-LongJobs
 #SBATCH --mail-type=begin        # send mail when job begins
 #SBATCH --mail-type=end          # send mail when job ends
@@ -56,7 +56,12 @@ mkdir -p ${SCRATCH_DIR}
 SCRATCH_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
 SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
 
+SCRATCH_CHECKPOINT_DIR=${SCRATCH_OUT_DIR}/s-presnet18-e5-b32-t0_99-p128
+
 EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
+
+EXPERIMENT_CHECKPOINT_DIR=${EXPERIMENT_OUT_DIR}/s-presnet18-e5-b32-t0_99-p128
+
 SLURM_OUT_DIR=${EXPERIMENT_DIR}/slurm_logs/canonical_logs
 
 mkdir -p ${SCRATCH_DATA_DIR}
@@ -71,6 +76,9 @@ echo "________________________________________"
 # transfer the data file to scratch
 echo "Transferring files from ${DATA_DIR} to ${SCRATCH_DATA_DIR}"
 rsync --archive --update --compress --progress ${DATA_DIR}/ ${SCRATCH_DATA_DIR}
+
+echo "Transferring checkpoint from ${DATA_DIR} to ${SCRATCH_DATA_DIR}"
+rsync --archive --update --compress --progress ${EXPERIMENT_CHECKPOINT_DIR}/ ${SCRATCH_CHECKPOINT_DIR}
 
 echo "________________________________________"
 
