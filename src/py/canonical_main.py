@@ -111,6 +111,7 @@ def main(args):
         patch_validation_dataset.save(PATCH_VALIDATION_DATASET_DIR)
 
     if args.os:
+        logging.info("Using OS maps as canonical.")
         CANONICAL_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir,
                                                    f"canonical_os_train_dataset_{args.patch_size}.pk")
         CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir,
@@ -150,6 +151,9 @@ def main(args):
             canonical_train_dataset.save(CANONICAL_TRAIN_DATASET_DIR)
             canonical_validation_dataset.save(CANONICAL_VALIDATION_DATASET_DIR)
     else:
+
+        logging.info("Using OSM maps as canonical.")
+
         CANONICAL_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_train_dataset_{args.patch_size}.pk")
         CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_val_dataset_{args.patch_size}.pk")
 
