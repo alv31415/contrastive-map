@@ -381,6 +381,12 @@ class UNet(nn.Module):
                 "Can't train if the optimiser or loss haven't been set. Please run model.compile_model first.")
             return None
 
+        if 0 < save_reconstruction_interval <= 0:
+            save_reconstruction_interval = int(save_reconstruction_interval * (len(train_loader)-1))
+
+        if save_reconstruction_interval <= 0:
+            save_reconstruction_interval = len(train_loader)-1
+
         self.to(self.device)
 
         for epoch in range(epochs):

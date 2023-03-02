@@ -106,6 +106,7 @@ class CanonicalDataset(Dataset):
         if data_dir is None:
             data_dir = os.path.abspath(os.path.join(patch_datasets[0].X_1[0].origin_map, os.pardir, os.pardir))
 
+        logging.info(f"Fetching canonical patch names from {data_dir}")
         canonical_patch_names = CanonicalDataset.get_canonical_patch_names(data_dir=data_dir,
                                                                            canonical_idx=canonical_idx)
 

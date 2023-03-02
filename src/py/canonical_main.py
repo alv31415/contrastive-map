@@ -56,7 +56,11 @@ def get_parser():
     parser.add_argument("--use-contrastive-output", action='store_true', default=False,
                         help="if present, uses embedding of vector as output. Otherwise, uses last set of feature maps.")
     parser.add_argument("--grayscale", action='store_true', default=False,
-                        help="if present, output will be grayscale image")
+                        help="if present, output will be grayscale image.")
+    parser.add_argument("--os", action='store_true', default=False,
+                        help="if present, unet will be trained to generate canonical OS images.")
+    parser.add_argument("--remove-copies", action='store_true', default=False,
+                        help="if present, repeated OS maps won't be used.")
 
 
     # I/O params
@@ -106,24 +110,65 @@ def main(args):
         patch_train_dataset.save(PATCH_TRAIN_DATASET_DIR)
         patch_validation_dataset.save(PATCH_VALIDATION_DATASET_DIR)
 
-    CANONICAL_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_train_dataset_{args.patch_size}.pk")
-    CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_val_dataset_{args.patch_size}.pk")
+    if args.os:
+        CANONICAL_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir,
+                                                   f"canonical_os_train_dataset_{args.patch_size}.pk")
+        CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir,
+                                                        f"canonical_os_val_dataset_{args.patch_size}.pk")
 
-    # create the CanonicalDataset object (or load it if available)
-    if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR):
-        with open(CANONICAL_TRAIN_DATASET_DIR, "rb") as f:
-            canonical_train_dataset = pk.load(f)
+        # create the CanonicalDataset object (or load it if available)
+        if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR):
+            with open(CANONICAL_TRAIN_DATASET_DIR, "rb") as f:
+                canonical_train_dataset = pk.load(f)
 
-        with open(CANONICAL_VALIDATION_DATASET_DIR, "rb") as f:
-            canonical_validation_dataset = pk.load(f)
+            with open(CANONICAL_VALIDATION_DATASET_DIR, "rb") as f:
+                canonical_validation_dataset = pk.load(f)
+        else:
+
+            with open(PATCH_TRAIN_DATASET_DIR, "rb") as f:
+                patch_train_dataset = pk.load(f)
+
+            with open(PATCH_VALIDATION_DATASET_DIR, "rb") as f:
+                patch_validation_dataset = pk.load(f)
+
+            canonical_patch_dict = CanonicalDataset.get_canonical_patch_dict_from_dataset(
+                patch_datasets=[patch_train_dataset, patch_validation_dataset],
+                canonical_idx=1,
+                data_dir=None)
+
+            canonical_train_dataset = CanonicalDataset.from_os_dataset(patch_dataset = patch_train_dataset,
+                                                                        canonical_idx = None,
+                                                                        data_dir = None,
+                                                                        canonical_patch_dict = canonical_patch_dict,
+                                                                        remove_copies = args.remove_copies)
+            canonical_validation_dataset = CanonicalDataset.from_os_dataset(patch_dataset = patch_validation_dataset,
+                                                                            canonical_idx = None,
+                                                                            data_dir = None,
+                                                                            canonical_patch_dict = canonical_patch_dict,
+                                                                            remove_copies = args.remove_copies)
+
+            canonical_train_dataset.save(CANONICAL_TRAIN_DATASET_DIR)
+            canonical_validation_dataset.save(CANONICAL_VALIDATION_DATASET_DIR)
     else:
-        canonical_train_dataset = CanonicalDataset.from_dir(patch_dataset_dir = PATCH_TRAIN_DATASET_DIR,
-                                                            canonical_maps_dir= args.input)
-        canonical_validation_dataset = CanonicalDataset.from_dir(patch_dataset_dir=PATCH_VALIDATION_DATASET_DIR,
-                                                                 canonical_maps_dir=args.input)
+        CANONICAL_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_train_dataset_{args.patch_size}.pk")
+        CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_val_dataset_{args.patch_size}.pk")
 
-        canonical_train_dataset.save(CANONICAL_TRAIN_DATASET_DIR)
-        canonical_validation_dataset.save(CANONICAL_VALIDATION_DATASET_DIR)
+        # create the CanonicalDataset object (or load it if available)
+        if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR):
+            with open(CANONICAL_TRAIN_DATASET_DIR, "rb") as f:
+                canonical_train_dataset = pk.load(f)
+
+            with open(CANONICAL_VALIDATION_DATASET_DIR, "rb") as f:
+                canonical_validation_dataset = pk.load(f)
+        else:
+
+            canonical_train_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir = PATCH_TRAIN_DATASET_DIR,
+                                                                canonical_maps_dir= args.input)
+            canonical_validation_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir=PATCH_VALIDATION_DATASET_DIR,
+                                                                     canonical_maps_dir=args.input)
+
+            canonical_train_dataset.save(CANONICAL_TRAIN_DATASET_DIR)
+            canonical_validation_dataset.save(CANONICAL_VALIDATION_DATASET_DIR)
 
     logging.info(f"Generated training dataset with {len(canonical_train_dataset)} samples.")
     logging.info(f"Generated validation dataset with {len(canonical_validation_dataset)} samples.")

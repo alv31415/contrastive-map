@@ -34,11 +34,14 @@ def get_default_arg_dict(scratch_data_dir, patch_data_dir):
         "--use-byol": True,
         "--use-contrastive-output": True,
         "--loss": "MSE",
-        "--grayscale": False
+        "--grayscale": False,
+        "--os": False,
+        "--remove-copies": False
     }
 
-def get_experiment_name(epochs, batch_size, patch_size, use_contrastive_output, loss, grayscale):
-    return f"can{'g' if grayscale else ''}-{'co' if use_contrastive_output else 'nco'}-{loss}-e{epochs}-b{batch_size}-p{patch_size}"
+def get_experiment_name(epochs, batch_size, patch_size, lr, use_contrastive_output, loss, grayscale, os, remove_copies):
+    string_lr = str(lr).replace(".", "_").replace(",", "_")
+    return f"can{'g' if grayscale else ''}-{'rc-' if remove_copies else ''}{'os-' if os else ''}{'co' if use_contrastive_output else 'nco'}-{loss}-e{epochs}-lr{string_lr}-b{batch_size}-p{patch_size}"
 
 def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_dataset_dir, experiment_args):
     arg_dict = get_default_arg_dict(scratch_data_dir, patch_dataset_dir)
@@ -60,10 +63,13 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_datase
 
     arg_dict["--experiment-name"] = get_experiment_name(epochs=arg_dict["--epochs"],
                                                         batch_size=arg_dict["--batch-size"],
+                                                        lr=arg_dict["--lr"],
                                                         patch_size=arg_dict["--patch-size"],
                                                         use_contrastive_output=arg_dict.get("--use-contrastive-output", False),
                                                         loss=arg_dict["--loss"],
-                                                        grayscale=arg_dict.get("--grayscale", False))
+                                                        grayscale=arg_dict.get("--grayscale", False),
+                                                        os=arg_dict.get("--os", False),
+                                                        remove_copies=arg_dict.get("--remove-copies", False))
 
     python_call = f"python {main_file}"
 
@@ -79,6 +85,71 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_datase
 
 
 def main(args):
+    # testing: high epochs, simclr & byol, os vs osm
+    experiment_argss = [
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": 30,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--save-reconstruction-interval": 1000,
+            "--train-proportion": 0.98,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "s-presnet18-e5-b32-t0_99-p128",
+                                                         "simclr_checkpoint.pt"),
+            "--use-byol": False,
+            "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os" : False,
+            "--remove-copies" : False
+        },
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": 30,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--save-reconstruction-interval": 1000,
+            "--train-proportion": 0.98,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "b-presnet18-e5-b32-t0_99-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": True,
+            "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": False,
+            "--remove-copies": False
+        },
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": 30,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--save-reconstruction-interval": 1000,
+            "--train-proportion": 0.98,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "s-presnet18-e5-b32-t0_99-p128",
+                                                         "simclr_checkpoint.pt"),
+            "--use-byol": False,
+            "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": True,
+            "--remove-copies": True
+        }
+        ]
+    #TODO
+    # - change learning rate
+    # - grayscale vs no grayscale
+    # - different BYOL
+    """
     experiment_argss = [
         {
             "--batch-size": 64,
@@ -133,7 +204,7 @@ def main(args):
         }
     ]
 
-    """
+
     experiment_argss = [
         {
             "--batch-size": 64,
