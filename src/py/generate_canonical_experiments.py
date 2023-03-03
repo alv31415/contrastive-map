@@ -97,6 +97,28 @@ def main(args):
             "--save-reconstruction-interval": 1000,
             "--train-proportion": 0.98,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "b-presnet18-e5-b32-t0_9-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": True,
+            "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": False,
+            "--remove-copies": False
+        }
+    ]
+    """
+    experiment_argss = [
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": 30,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--save-reconstruction-interval": 1000,
+            "--train-proportion": 0.98,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
                                                          "s-presnet18-e5-b32-t0_99-p128",
                                                          "simclr_checkpoint.pt"),
             "--use-byol": False,
@@ -116,7 +138,7 @@ def main(args):
             "--save-reconstruction-interval": 1000,
             "--train-proportion": 0.98,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "b-presnet18-e5-b32-t0_9-p64",
+                                                         "b-presnet18-e5-b32-t0_9-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
             "--use-contrastive-output": False,
@@ -145,6 +167,7 @@ def main(args):
             "--remove-copies": True
         }
         ]
+    """
     #TODO
     # - change learning rate
     # - grayscale vs no grayscale
