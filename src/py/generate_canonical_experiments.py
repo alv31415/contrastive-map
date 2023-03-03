@@ -105,6 +105,25 @@ def main(args):
             "--grayscale": False,
             "--os": False,
             "--remove-copies": False
+        },
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": 30,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--save-reconstruction-interval": 1000,
+            "--train-proportion": 0.98,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "b-presnet18-e5-b32-t0_9-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": True,
+            "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": True,
+            "--remove-copies": True
         }
     ]
     """
