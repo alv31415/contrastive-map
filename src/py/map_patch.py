@@ -22,7 +22,7 @@ class MapPatch():
         self.patch = patch
         self.patch_index = patch_index
         self.origin_map = origin_map
-        self.patch_shift = None
+        self.contrastive_representation = None
         
     @staticmethod
     def get_map_patches(file_name, patch_width, verbose = True):
