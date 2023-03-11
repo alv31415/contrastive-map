@@ -93,6 +93,7 @@ class MapBYOL(nn.Module):
         self.checkpoint = {"epoch": 0,
                            "batch": 0,
                            "model_state_dict": self.state_dict(),
+                           "best_model_state_dict": None,
                            "optimiser_state_dict": None,
                            "loss": 0,
                            "avg_batch_losses_20": [],
@@ -123,6 +124,7 @@ class MapBYOL(nn.Module):
 
         return norm_img
 
+    @torch.no_grad()
     def img_to_resnet(self, img, dim=None):
         """
         Convert image into the desired format for ResNet.
@@ -209,6 +211,7 @@ class MapBYOL(nn.Module):
         # average the loss over the batch
         return (loss_1 + loss_2).mean()
 
+    @torch.no_grad()
     def update_checkpoint(self, checkpoint_dir, batch_losses, validation_losses, **checkpoint_data):
         """
         Updates the checkpoint dictionary.
@@ -257,7 +260,7 @@ class MapBYOL(nn.Module):
 
         return np.mean(val_losses)
 
-    def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, batch_log_rate=100):
+    def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir = None, logs_per_epoch = 100, evaluations_per_epoch = 100):
         """
         Trains the network.
         ---------------------------------------------------------------------------------------------------
@@ -265,7 +268,7 @@ class MapBYOL(nn.Module):
         :param validation_loader: a PyTorch DataLoader, containing the validation data.
         :param epochs: an int, the number of epochs for training.
         :param checkpoint_dir: a string, the directory to which to write the checkpoints.
-        :param batch_log_rate: an int. Every batch_log_rate batches, the performance of the network 
+        :param logs_per_epoch: an int. Every logs_per_epoch batches, the performance of the network
                                is logged. By default logging is performed every 100 batches.
         
         """
@@ -281,11 +284,15 @@ class MapBYOL(nn.Module):
         else:
             transform_inputs = self.to_tensor
 
+        best_validation_loss = float("inf")
+        best_model_state_dict = None
+
         for epoch in range(epochs):
             batch_losses = []
             validation_losses = []
             avg_batch_losses_20 = []
             logging.info(f"Starting Epoch: {epoch + 1}")
+
             for batch, (x_1, x_2) in enumerate(train_loader):
                 # x_1 and x_2 are tensors containing patches, 
                 # such that x_1[i] and x_2[i] are patches for the same area
@@ -301,29 +308,34 @@ class MapBYOL(nn.Module):
                 self.optimiser.step()
                 self.update_target_network()
 
-                if batch % (len(train_loader) // batch_log_rate + 1) == 0 and batch != 0:
+                if batch % (len(train_loader) // logs_per_epoch + 1) == 0 and batch != 0:
                     with torch.no_grad():
                         avg_loss = np.mean(batch_losses[-20:])
                         avg_batch_losses_20.append(avg_loss)
                         logging.info(
                             f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Training Loss = {avg_loss}")
 
-                        if batch % (len(train_loader) // (batch_log_rate//4) + 1) == 0:
-                            validation_loss = self.get_validation_loss(validation_loader)
-                            validation_losses.append(validation_loss)
-                            logging.info(
-                                f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Validation Loss = {validation_loss}")
+                if batch % (len(train_loader) // (logs_per_epoch // 4) + 1) == 0:
+                    validation_loss = self.get_validation_loss(validation_loader)
+                    validation_losses.append(validation_loss)
 
-                        self.update_checkpoint(checkpoint_dir=checkpoint_dir,
-                                               batch_losses=batch_losses,
-                                               validation_losses=validation_losses,
-                                               epoch=epoch,
-                                               batch=batch,
-                                               model_state_dict=self.state_dict(),
-                                               optimiser_state_dict=self.optimiser.state_dict,
-                                               loss=loss.cpu().detach(),
-                                               avg_batch_losses_20=avg_batch_losses_20,
-                                               run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+                    if validation_loss < best_validation_loss:
+                        best_validation_loss = validation_loss
+                        best_model_state_dict = self.state_dict()
+
+                    logging.info(f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Validation Loss = {validation_loss}")
+
+                    self.update_checkpoint(checkpoint_dir=checkpoint_dir,
+                                           batch_losses=batch_losses,
+                                           validation_losses=validation_losses,
+                                           epoch=epoch,
+                                           batch=batch,
+                                           model_state_dict=self.state_dict(),
+                                           best_model_state_dict=best_model_state_dict,
+                                           optimiser_state_dict=self.optimiser.state_dict,
+                                           loss=loss.cpu().detach(),
+                                           avg_batch_losses_20=avg_batch_losses_20,
+                                           run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
             with torch.no_grad():
                 self.update_checkpoint(checkpoint_dir=checkpoint_dir,
@@ -332,6 +344,7 @@ class MapBYOL(nn.Module):
                                        epoch=epochs,
                                        batch=len(train_loader),
                                        model_state_dict=self.state_dict(),
+                                       best_model_state_dict=best_model_state_dict,
                                        optimiser_state_dict=self.optimiser.state_dict,
                                        loss=loss.cpu().detach(),
                                        avg_batch_losses_20=avg_batch_losses_20,

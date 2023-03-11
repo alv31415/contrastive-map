@@ -44,9 +44,10 @@ def get_parser():
                         help="learning rate (default: 0.001)")
     parser.add_argument("--seed", type=int, default=23, metavar="S",
                         help="random seed (default: 23)")
-    parser.add_argument("--log-interval", type=int, default=50, metavar="N",
-                        help="how many batches to wait before logging "
-                             "training status (default: 50)")
+    parser.add_argument("--logs-per-epoch", type=int, default=50, metavar="N",
+                        help="how many times to log training progress per epoch (default: 50)")
+    parser.add_argument("--evaluations-per-epoch", type=int, default=50, metavar="N",
+                        help="how many times to evaluate model per epoch (default: 50)")
     parser.add_argument("--train-proportion", type=float, default=0.8, metavar="P",
                         help="proportion of data to be used for training (default: 0.8)")
     parser.add_argument("--validation-proportion", type=float, default=0.1,
@@ -212,11 +213,13 @@ def main(args):
     torch.cuda.empty_cache()
 
     # train the model
-    model.train_model(train_loader = train_loader,
-                      validation_loader = validation_loader,
-                      epochs = args.epochs,
-                      checkpoint_dir = os.path.join(args.output, args.experiment_name),
-                      batch_log_rate = args.log_interval)
+    model.train_model(train_loader=train_loader,
+                      validation_loader=validation_loader,
+                      epochs=args.epochs,
+                      checkpoint_dir=os.path.join(args.output, args.experiment_name),
+                      logs_per_epoch = args.logs_per_epoch,
+                      evaluations_per_epoch = args.evaluations_per_epoch
+                      )
 
 # --------------------------------------------------- RUN ---------------------------------------------------
 
