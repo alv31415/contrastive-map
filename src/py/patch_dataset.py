@@ -181,13 +181,15 @@ class CLPatchDataset(Dataset):
 
         return patch_dict
 
-    def get_split_dict(self, p_train, p_validation, p_test, seed=23):
+    def get_split_dict(self, p_train, p_validation, seed=23):
         np.random.seed(seed)
 
         patch_dict = self.get_patch_dict()
         split_dict = {patch_folder: {"train": [], "validation": [], "test": []} for patch_folder in patch_dict.keys()}
 
-        assert p_train + p_validation + p_test == 1
+        assert p_train + p_validation <= 1
+
+        p_test = 1 - p_train - p_validation
 
         split_proportions = [p_train, p_validation, p_test]
 
@@ -221,7 +223,6 @@ class CLPatchDataset(Dataset):
     def unique_split(self, p_train=0.8, p_validation=0.1, p_test=0.1, seed=23):
         split_dict = self.get_split_dict(p_train=p_train,
                                          p_validation=p_validation,
-                                         p_test=p_test,
                                          seed=seed)
 
         train_X_1 = []
@@ -263,7 +264,8 @@ class CLPatchDataset(Dataset):
 
         return train_set, validation_set, test_set
 
-    def random_split(self, p_train=0.8, p_validation=0.1, p_test=0.1, seed=23):
+    def random_split(self, p_train=0.8, p_validation=0.1, seed=23):
+        p_test = 1 - p_train - p_validation
         lengths = np.multiply([p_train, p_validation, p_test], len(self.X_1)).astype(int)
         lengths[0] += len(self.X_1) - np.sum(lengths)
 

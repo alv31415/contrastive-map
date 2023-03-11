@@ -40,15 +40,17 @@ def get_parser():
                         help="size of patches for dataset (default: 64)")
     parser.add_argument("--epochs", type=int, default=15, metavar="N",
                         help="number of epochs to train (default: 15)")
-    parser.add_argument("--lr", type=float, default=0.001, metavar="LR",
+    parser.add_argument("--lr", type=float, default=1e-3, metavar="LR",
                         help="learning rate (default: 0.001)")
     parser.add_argument("--seed", type=int, default=23, metavar="S",
                         help="random seed (default: 23)")
     parser.add_argument("--log-interval", type=int, default=50, metavar="N",
                         help="how many batches to wait before logging "
                              "training status (default: 50)")
-    parser.add_argument("--train-proportion", type=float, default=0.98, metavar="P",
-                        help="proportion of data to be used for training (default: 0.98)")
+    parser.add_argument("--train-proportion", type=float, default=0.8, metavar="P",
+                        help="proportion of data to be used for training (default: 0.8)")
+    parser.add_argument("--validation-proportion", type=float, default=0.1,
+                        help="proportion of data to be used for validation (default: 0.1)")
 
     # I/O params
     parser.add_argument("--input", required=True, help="Path to the "
@@ -86,45 +88,43 @@ def main(args):
     torch.manual_seed(args.seed)
 
     TRAIN_DATASET_DIR = os.path.join(args.input, f"patch_train_dataset_{args.patch_size}.pk")
-    VALIDATION_DATASET_DIR = os.path.join(args.input, f"patch_val_dataset_{args.patch_size}.pk")
+    VALIDATION_DATASET_DIR = os.path.join(args.input, f"patch_validation_dataset_{args.patch_size}.pk")
+    TEST_DATASET_DIR = os.path.join(args.input, f"patch_test_dataset_{args.patch_size}.pk")
+
     logging.info(f"File at {TRAIN_DATASET_DIR}: {os.path.isfile(TRAIN_DATASET_DIR)}")
     logging.info(f"File at {VALIDATION_DATASET_DIR}: {os.path.isfile(VALIDATION_DATASET_DIR)}")
+    logging.info(f"File at {TEST_DATASET_DIR}: {os.path.isfile(TEST_DATASET_DIR)}")
 
     # create the DataSet object (or load it if available)
-    if os.path.isfile(TRAIN_DATASET_DIR) and os.path.isfile(VALIDATION_DATASET_DIR):
+    if os.path.isfile(TRAIN_DATASET_DIR) and os.path.isfile(VALIDATION_DATASET_DIR) and os.path.isfile(TEST_DATASET_DIR):
         with open(TRAIN_DATASET_DIR, "rb") as f:
             train_dataset = pk.load(f)
 
         with open(VALIDATION_DATASET_DIR, "rb") as f:
             validation_dataset = pk.load(f)
+
+        with open(TEST_DATASET_DIR, "rb") as f:
+            test_dataset = pk.load(f)
     else:
         cl_patch_dataset = CLPatchDataset.from_dir(map_directory = args.input,
                                                    patch_width = args.patch_size,
                                                    verbose=True)
 
-        train_size = int(args.train_proportion * len(cl_patch_dataset))
-        val_size = len(cl_patch_dataset) - train_size
-        train_data, val_data = random_split(cl_patch_dataset,
-                                            lengths=[train_size, val_size],
-                                            generator=torch.Generator().manual_seed(args.seed))
-
-        train_X_1 = [cl_patch_dataset.X_1[i] for i in train_data.indices]
-        train_X_2 = [cl_patch_dataset.X_2[i] for i in train_data.indices]
-        val_X_1 = [cl_patch_dataset.X_1[i] for i in val_data.indices]
-        val_X_2 = [cl_patch_dataset.X_2[i] for i in val_data.indices]
-
-        train_dataset = CLPatchDataset(train_X_1, train_X_2)
-        validation_dataset = CLPatchDataset(val_X_1, val_X_2)
+        train_dataset, validation_dataset, test_dataset = cl_patch_dataset.unique_split(p_train = args.train_proportion,
+                                                                                        p_validation = args.validation_proportion,
+                                                                                        seed = args.seed)
 
         train_dataset.save(TRAIN_DATASET_DIR)
         validation_dataset.save(VALIDATION_DATASET_DIR)
+        test_dataset.save(TEST_DATASET_DIR)
 
     logging.info(f"Generated training dataset with {len(train_dataset)} samples.")
     logging.info(f"Generated validation dataset with {len(validation_dataset)} samples.")
+    logging.info(f"Generated test dataset with {len(test_dataset)} samples.")
 
     # create the DataLoader object
     train_loader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
-    validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
+    validation_loader = DataLoader(validation_dataset, batch_size = args.batch_size, shuffle = False, num_workers = 4)
 
     encoder_parameters = {"encoder_layer_idx" : args.encoder_layer_idx,
                           "use_resnet" : args.encoder != "cnn"}
@@ -190,22 +190,22 @@ def main(args):
                             "use_batch_norm": True}
 
     if args.use_byol:
-        model = MapBYOL(encoder=encoder,
-                        encoder_parameters=encoder_parameters,
-                        projector_parameters=projector_parameters,
-                        predictor_parameters=predictor_parameters,
+        model = MapBYOL(encoder = encoder,
+                        encoder_parameters = encoder_parameters,
+                        projector_parameters = projector_parameters,
+                        predictor_parameters = predictor_parameters,
                         ema_tau = args.byol_ema_tau)
 
         logging.info(f"Using BYOL with tau = {args.byol_ema_tau}, with encoder layer index = {args.encoder_layer_idx}")
     else:
-        model = MapSIMCLR(encoder=encoder,
-                          encoder_parameters=encoder_parameters,
-                          projector_parameters=projector_parameters,
+        model = MapSIMCLR(encoder = encoder,
+                          encoder_parameters = encoder_parameters,
+                          projector_parameters = projector_parameters,
                           tau = args.simclr_tau)
 
         logging.info(f"Using SimCLR with tau = {args.simclr_tau}, with encoder layer index = {args.encoder_layer_idx}")
 
-    model.compile_optimiser()
+    model.compile_optimiser(lr = args.lr)
 
     logging.info(f"Using device: {model.device}")
 
