@@ -24,6 +24,7 @@ from torch.utils.data import DataLoader, random_split
 from torchvision.models.resnet import resnet18, ResNet18_Weights, resnet34, ResNet34_Weights, resnet50, ResNet50_Weights
 
 from patch_dataset import CLPatchDataset
+from geo_patch_dataset import GeoPatchDataset
 from byol import MapBYOL
 from simclr import MapSIMCLR
 from cnn import CNN
@@ -63,6 +64,8 @@ def get_parser():
     # model choices
     parser.add_argument("--use-byol", action='store_true', default=False,
                         help="if present, uses BYOL model, otherwise SimCLR")
+    parser.add_argument("--use-geo-contrastive", action='store_true', default=False,
+                        help="if present, also uses a geographical contrastive objective")
     parser.add_argument("--encoder", choices=["cnn", "resnet18", "resnet34", "resnet50"],
                         help="type of encoder to use (out of cnn, resnet18, resnet50)")
     parser.add_argument("--pretrain-encoder", action="store_true", default=False,
@@ -88,9 +91,15 @@ def main(args):
 
     torch.manual_seed(args.seed)
 
-    TRAIN_DATASET_DIR = os.path.join(args.input, f"patch_train_dataset_{args.patch_size}.pk")
-    VALIDATION_DATASET_DIR = os.path.join(args.input, f"patch_validation_dataset_{args.patch_size}.pk")
-    TEST_DATASET_DIR = os.path.join(args.input, f"patch_test_dataset_{args.patch_size}.pk")
+    logging.info(f"Using geographical contrastive objective: {args.use_geo_contrastive}")
+
+    train_dataset_name = "geo_" if args.use_geo_contrastive else "" + f"patch_train_dataset_{args.patch_size}.pk"
+    validation_dataset_name = "geo_" if args.use_geo_contrastive else "" + f"patch_validation_dataset_{args.patch_size}.pk"
+    test_dataset_name = "geo_" if args.use_geo_contrastive else "" + f"patch_test_dataset_{args.patch_size}.pk"
+
+    TRAIN_DATASET_DIR = os.path.join(args.input, train_dataset_name)
+    VALIDATION_DATASET_DIR = os.path.join(args.input, validation_dataset_name)
+    TEST_DATASET_DIR = os.path.join(args.input, test_dataset_name)
 
     logging.info(f"File at {TRAIN_DATASET_DIR}: {os.path.isfile(TRAIN_DATASET_DIR)}")
     logging.info(f"File at {VALIDATION_DATASET_DIR}: {os.path.isfile(VALIDATION_DATASET_DIR)}")
@@ -107,13 +116,32 @@ def main(args):
         with open(TEST_DATASET_DIR, "rb") as f:
             test_dataset = pk.load(f)
     else:
-        cl_patch_dataset = CLPatchDataset.from_dir(map_directory = args.input,
+        patch_dataset = CLPatchDataset.from_dir(map_directory = args.input,
                                                    patch_width = args.patch_size,
                                                    verbose=True)
 
-        train_dataset, validation_dataset, test_dataset = cl_patch_dataset.unique_split(p_train = args.train_proportion,
+        train_dataset, validation_dataset, test_dataset = patch_dataset.unique_split(p_train = args.train_proportion,
                                                                                         p_validation = args.validation_proportion,
                                                                                         seed = args.seed)
+
+        if args.use_geo_contrastive:
+            geographical_patch_dict, max_index = GeoPatchDataset.get_geographical_patch_dict([patch_train_dataset, patch_val_dataset])
+
+            train_dataset = GeoPatchDataset.from_dataset(patch_dataset=train_dataset,
+                                                         shift=1,
+                                                         n_contexts=2,
+                                                         geographical_patch_dict=geographical_patch_dict,
+                                                         max_index=max_index)
+            validation_dataset = GeoPatchDataset.from_dataset(patch_dataset=validation_dataset,
+                                                              shift=1,
+                                                              n_contexts=2,
+                                                              geographical_patch_dict=geographical_patch_dict,
+                                                              max_index=max_index)
+            test_dataset = GeoPatchDataset.from_dataset(patch_dataset=test_dataset,
+                                                        shift=1,
+                                                        n_contexts=2,
+                                                        geographical_patch_dict=geographical_patch_dict,
+                                                        max_index=max_index)
 
         train_dataset.save(TRAIN_DATASET_DIR)
         validation_dataset.save(VALIDATION_DATASET_DIR)
