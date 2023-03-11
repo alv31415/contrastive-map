@@ -125,7 +125,9 @@ def main(args):
                                                                                         seed = args.seed)
 
         if args.use_geo_contrastive:
-            geographical_patch_dict, max_index = GeoPatchDataset.get_geographical_patch_dict([patch_train_dataset, patch_val_dataset])
+            geographical_patch_dict, max_index = GeoPatchDataset.get_geographical_patch_dict([train_dataset,
+                                                                                              validation_dataset,
+                                                                                              test_dataset])
 
             train_dataset = GeoPatchDataset.from_dataset(patch_dataset=train_dataset,
                                                          shift=1,

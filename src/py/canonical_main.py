@@ -45,12 +45,17 @@ def get_parser():
                         help="learning rate (default: 0.001)")
     parser.add_argument("--seed", type=int, default=23, metavar="S",
                         help="random seed (default: 23)")
-    parser.add_argument("--log-interval", type=int, default=50, metavar="N",
-                        help="number of times (per epoch) that losses are logged (default: 50)")
-    parser.add_argument("--save-reconstruction-interval", type=int, default=50, metavar="N",
+    parser.add_argument("--logs-per-epoch", type=int, default=50, metavar="N",
+                        help="how many times to log training progress per epoch (default: 50)")
+    parser.add_argument("--evaluations-per-epoch", type=int, default=50, metavar="N",
+                        help="how many times to evaluate model per epoch (default: 50)")
+    parser.add_argument("--reconstruction-saves-per-epoch", type=int, default=50, metavar="N",
                         help="how many batches to wait before running model on test images (default: 50)")
-    parser.add_argument("--train-proportion", type=float, default=0.98, metavar="P",
-                        help="proportion of data to be used for training (default: 0.98)")
+
+    parser.add_argument("--train-proportion", type=float, default=0.8, metavar="P",
+                        help="proportion of data to be used for training (default: 0.8)")
+    parser.add_argument("--validation-proportion", type=float, default=0.1,
+                        help="proportion of data to be used for validation (default: 0.1)")
     parser.add_argument("--use-byol", action='store_true', default=False,
                         help="if present, uses BYOL model, otherwise SimCLR")
     parser.add_argument("--use-contrastive-output", action='store_true', default=False,
@@ -85,40 +90,34 @@ def main(args):
     torch.manual_seed(args.seed)
 
     PATCH_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"patch_train_dataset_{args.patch_size}.pk")
-    PATCH_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"patch_val_dataset_{args.patch_size}.pk")
+    PATCH_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"patch_validation_dataset_{args.patch_size}.pk")
+    PATCH_TEST_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"patch_test_dataset_{args.patch_size}.pk")
 
     # create the CLPatchDataset object if it doesn't exist
-    if not os.path.isfile(PATCH_TRAIN_DATASET_DIR) or not os.path.isfile(PATCH_VALIDATION_DATASET_DIR):
-        cl_patch_dataset = CLPatchDataset.from_dir(map_directory = args.patch_dataset_dir,
-                                                   patch_width = args.patch_size,
-                                                   verbose=True)
+    if not os.path.isfile(PATCH_TRAIN_DATASET_DIR) or not os.path.isfile(PATCH_VALIDATION_DATASET_DIR) or not os.path.isfile(PATCH_TEST_DATASET_DIR):
+        patch_dataset = CLPatchDataset.from_dir(map_directory=args.input,
+                                                patch_width=args.patch_size,
+                                                verbose=True)
 
-        train_size = int(args.train_proportion * len(cl_patch_dataset))
-        val_size = len(cl_patch_dataset) - train_size
-        train_data, val_data = random_split(cl_patch_dataset,
-                                            lengths=[train_size, val_size],
-                                            generator=torch.Generator().manual_seed(args.seed))
-
-        train_X_1 = [cl_patch_dataset.X_1[i] for i in train_data.indices]
-        train_X_2 = [cl_patch_dataset.X_2[i] for i in train_data.indices]
-        val_X_1 = [cl_patch_dataset.X_1[i] for i in val_data.indices]
-        val_X_2 = [cl_patch_dataset.X_2[i] for i in val_data.indices]
-
-        patch_train_dataset = CLPatchDataset(train_X_1, train_X_2)
-        patch_validation_dataset = CLPatchDataset(val_X_1, val_X_2)
+        patch_train_dataset, patch_validation_dataset, patch_test_dataset = patch_dataset.unique_split(p_train=args.train_proportion,
+                                                                                                       p_validation=args.validation_proportion,
+                                                                                                       seed=args.seed)
 
         patch_train_dataset.save(PATCH_TRAIN_DATASET_DIR)
         patch_validation_dataset.save(PATCH_VALIDATION_DATASET_DIR)
+        patch_test_dataset.save(PATCH_TEST_DATASET_DIR)
 
     if args.os:
         logging.info("Using OS maps as canonical.")
         CANONICAL_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir,
                                                    f"canonical_os_train_dataset_{args.patch_size}.pk")
         CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir,
-                                                        f"canonical_os_val_dataset_{args.patch_size}.pk")
+                                                        f"canonical_os_validation_dataset_{args.patch_size}.pk")
+        CANONICAL_TEST_DATASET_DIR = os.path.join(args.patch_dataset_dir,
+                                                        f"canonical_os_test_dataset_{args.patch_size}.pk")
 
         # create the CanonicalDataset object (or load it if available)
-        if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR):
+        if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR) and os.path.isfile(CANONICAL_TEST_DATASET_DIR):
             with open(CANONICAL_TRAIN_DATASET_DIR, "rb") as f:
                 canonical_train_dataset = pk.load(f)
 
@@ -132,8 +131,11 @@ def main(args):
             with open(PATCH_VALIDATION_DATASET_DIR, "rb") as f:
                 patch_validation_dataset = pk.load(f)
 
+            with open(PATCH_TEST_DATASET_DIR, "rb") as f:
+                patch_test_dataset = pk.load(f)
+
             canonical_patch_dict = CanonicalDataset.get_canonical_patch_dict_from_dataset(
-                patch_datasets=[patch_train_dataset, patch_validation_dataset],
+                patch_datasets=[patch_train_dataset, patch_validation_dataset, patch_test_dataset],
                 canonical_idx=1,
                 data_dir=None)
 
@@ -147,18 +149,25 @@ def main(args):
                                                                             data_dir = None,
                                                                             canonical_patch_dict = canonical_patch_dict,
                                                                             remove_copies = args.remove_copies)
+            canonical_test_dataset = CanonicalDataset.from_os_dataset(patch_dataset=patch_test_dataset,
+                                                                            canonical_idx=None,
+                                                                            data_dir=None,
+                                                                            canonical_patch_dict=canonical_patch_dict,
+                                                                            remove_copies=args.remove_copies)
 
             canonical_train_dataset.save(CANONICAL_TRAIN_DATASET_DIR)
             canonical_validation_dataset.save(CANONICAL_VALIDATION_DATASET_DIR)
+            canonical_test_dataset.save(CANONICAL_TEST_DATASET_DIR)
     else:
 
         logging.info("Using OSM maps as canonical.")
 
         CANONICAL_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_train_dataset_{args.patch_size}.pk")
-        CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_val_dataset_{args.patch_size}.pk")
+        CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_validation_dataset_{args.patch_size}.pk")
+        CANONICAL_TEST_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_test_dataset_{args.patch_size}.pk")
 
         # create the CanonicalDataset object (or load it if available)
-        if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR):
+        if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR) and os.path.isfile(CANONICAL_TEST_DATASET_DIR):
             with open(CANONICAL_TRAIN_DATASET_DIR, "rb") as f:
                 canonical_train_dataset = pk.load(f)
 
@@ -170,12 +179,16 @@ def main(args):
                                                                 canonical_maps_dir= args.input)
             canonical_validation_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir=PATCH_VALIDATION_DATASET_DIR,
                                                                      canonical_maps_dir=args.input)
+            canonical_test_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir=PATCH_TEST_DATASET_DIR,
+                                                                         canonical_maps_dir=args.input)
 
             canonical_train_dataset.save(CANONICAL_TRAIN_DATASET_DIR)
             canonical_validation_dataset.save(CANONICAL_VALIDATION_DATASET_DIR)
+            canonical_test_dataset.save(CANONICAL_TEST_DATASET_DIR)
 
     logging.info(f"Generated training dataset with {len(canonical_train_dataset)} samples.")
     logging.info(f"Generated validation dataset with {len(canonical_validation_dataset)} samples.")
+    logging.info(f"Generated validation dataset with {len(canonical_test_dataset)} samples.")
 
     # create the DataLoader object
     canonical_train_loader = DataLoader(canonical_train_dataset,
@@ -219,8 +232,9 @@ def main(args):
                                   validation_loader = canonical_validation_loader,
                                   epochs = args.epochs,
                                   checkpoint_dir = canonical_checkpoint_dir,
-                                  batch_log_rate = args.log_interval,
-                                  save_reconstruction_interval = args.save_reconstruction_interval)
+                                  logs_per_epoch = args.logs_per_epoch,
+                                  evaluations_per_epoch = args.evaluations_per_epoch,
+                                  reconstruction_saves_per_epoch= args.reconstruction_saves_per_epoch)
 
 # --------------------------------------------------- RUN ---------------------------------------------------
 
