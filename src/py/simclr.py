@@ -283,8 +283,9 @@ class MapSIMCLR(nn.Module):
                     if validation_loss < best_validation_loss:
                         best_validation_loss = validation_loss
                         best_model_state_dict = self.state_dict()
-
-                    logging.info(f"Epoch {epoch + 1} ---- NT-XENT Validation Loss = {validation_loss}")
+                        logging.info(f"Epoch {epoch + 1} ---- New Best NT-XENT Validation Loss = {validation_loss}")
+                    else:
+                        logging.info(f"Epoch {epoch + 1} ---- NT-XENT Validation Loss = {validation_loss}")
 
                     self.update_checkpoint(checkpoint_dir=checkpoint_dir,
                                            batch_losses=batch_losses,
