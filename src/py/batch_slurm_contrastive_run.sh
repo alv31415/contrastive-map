@@ -52,13 +52,13 @@ fi
 DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals
 
 
-:'
+<<com
 HOME_DIR=/home/${STUDENT_ID}/honours-project
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
 DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals
 EXPERIMENT_FILE=${EXPERIMENT_DIR}/experiments.txt
-'
+com
 
 if [ -f "${EXPERIMENT_FILE}" ]; then
     echo "${EXPERIMENT_FILE} found."
@@ -90,13 +90,14 @@ fi
 EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output/${EXPERIMENT_NAME}
 SLURM_OUT_DIR=${EXPERIMENT_DIR}/slurm_logs
 
-:'
+<<com
 SCRATCH_DATA_DIR=${SCRATCH_DIR}/data
 SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
 
 EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
 SLURM_OUT_DIR=${EXPERIMENT_DIR}/slurm_logs
 '
+com
 
 mkdir -p ${SCRATCH_DATA_DIR}
 mkdir -p ${SCRATCH_OUT_DIR}
@@ -114,7 +115,7 @@ if [[ "$DEBUG" == "true" ]]; then
   echo "Data directory: ${DATA_DIR}"
   echo "Experiment file: ${EXPERIMENT_FILE}"
   echo "Experiment name: ${EXPERIMENT_NAME}"
-
+  exit
 
 #rm -rf ${SCRATCH_DATA_DIR}/*.pk ||:
 
