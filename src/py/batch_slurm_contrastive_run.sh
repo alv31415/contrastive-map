@@ -29,9 +29,9 @@ echo "________________________________________"
 
 # define main directories
 
-echo "${DEBUG}"
-echo "${HOME_DIR}"
-echo "${SCRATCH_DIR}"
+echo "$DEBUG"
+echo "$HOME_DIR"
+echo "$SCRATCH_DIR"
 
 
 if [ -z "${HOME_DIR}" ]; then
