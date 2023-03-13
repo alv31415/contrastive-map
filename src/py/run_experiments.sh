@@ -33,12 +33,12 @@ echo "${N_EXPERIMENTS} found. Running with maximum ${MAX_PARALLEL_JOBS} parallel
 # run sbatch job
 echo "Running batch job: sbatch --array=1-${N_EXPERIMENTS}%${MAX_PARALLEL_JOBS} ${SLURM_RUN_FILE} ${EXPERIMENT_FILE}"
 sbatch --array=1-${N_EXPERIMENTS}%${MAX_PARALLEL_JOBS}  \
-       --export=HOME_DIR=${HOME_DIR} \
-       --export=EXPERIMENT_DIR=${EXPERIMENT_DIR} \
-       --export=SCRATCH_DIR=${SCRATCH_DIR} \
-       --export=SCRATCH_DATA_DIR=${SCRATCH_DATA_DIR} \
-       --export=SCRATCH_OUT_DIR=${SCRATCH_OUT_DIR} \
-       --export=EXPERIMENT_NAME=${EXPERIMENT_NAME} \
-       --export=EXPERIMENT_FILE=${EXPERIMENT_FILE} \
+       --export=HOME_DIR="${HOME_DIR}" \
+       --export=EXPERIMENT_DIR="${EXPERIMENT_DIR}" \
+       --export=SCRATCH_DIR="${SCRATCH_DIR}" \
+       --export=SCRATCH_DATA_DIR="${SCRATCH_DATA_DIR}" \
+       --export=SCRATCH_OUT_DIR="${SCRATCH_OUT_DIR}" \
+       --export=EXPERIMENT_NAME="${EXPERIMENT_NAME}" \
+       --export=EXPERIMENT_FILE="${EXPERIMENT_FILE}" \
        --export=DEBUG=${DEBUG} \
        ${SLURM_RUN_FILE}
