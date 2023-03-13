@@ -29,12 +29,13 @@ echo "________________________________________"
 
 # define main directories
 
-env | grep "HOME_DIR\|SCRATCH_DIR\|EXPERIMENT_DIR\|EXPERIMENT_FILE\|EXPERIMENT_NAME"
+echo "${DEBUG}"
+echo "${HOME_DIR}"
+echo "${SCRATCH_DIR}"
+
 
 if [ -z "${HOME_DIR}" ]; then
   HOME_DIR=/home/${STUDENT_ID}/honours-project
-else
-  echo "${HOME_DIR} found"
 fi
 
 if [ -z "${SCRATCH_DIR}" ]; then
