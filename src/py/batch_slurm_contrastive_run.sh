@@ -29,6 +29,8 @@ echo "________________________________________"
 
 # define main directories
 
+env | grep "HOME_DIR\|SCRATCH_DIR\|EXPERIMENT_DIR\|EXPERIMENT_FILE\|EXPERIMENT_NAME"
+
 if [ -z "${HOME_DIR}" ]; then
   HOME_DIR=/home/${STUDENT_ID}/honours-project
 else
