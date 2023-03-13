@@ -40,5 +40,5 @@ sbatch --array=1-${N_EXPERIMENTS}%${MAX_PARALLEL_JOBS}  \
        --export=SCRATCH_OUT_DIR="${SCRATCH_OUT_DIR}" \
        --export=EXPERIMENT_NAME="${EXPERIMENT_NAME}" \
        --export=EXPERIMENT_FILE="${EXPERIMENT_FILE}" \
-       --export=DEBUG=${DEBUG} \
+       --export=DEBUG="${DEBUG}" \
        ${SLURM_RUN_FILE}
