@@ -2,7 +2,7 @@
 set -e
 
 # gather the files & directories to use
-DEBUG=false
+DEBUG=true
 STUDENT_ID=$(whoami)
 HOME_DIR=/home/${STUDENT_ID}/honours-project
 EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
