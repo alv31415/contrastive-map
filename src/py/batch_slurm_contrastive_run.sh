@@ -29,23 +29,25 @@ echo "________________________________________"
 
 # define main directories
 
-if [ -z ${HOME_DIR} ]; then
+if [ -z "${HOME_DIR}" ]; then
   HOME_DIR=/home/${STUDENT_ID}/honours-project
+else
+  echo "${HOME_DIR} found"
 fi
 
-if [ -z ${SCRATCH_DIR} ]; then
-  SCRATCH_DIR=/home/${STUDENT_ID}/honours-project
+if [ -z "${SCRATCH_DIR}" ]; then
+  SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 fi
 
-if [ -z ${EXPERIMENT_DIR} ]; then
+if [ -z "${EXPERIMENT_DIR}" ]; then
   EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
 fi
 
-if [ -z ${EXPERIMENT_FILE} ]; then
+if [ -z "${EXPERIMENT_FILE}" ]; then
   EXPERIMENT_FILE=${EXPERIMENT_DIR}/experiments.txt
 fi
 
-if [ -z ${EXPERIMENT_NAME} ]; then
+if [ -z "${EXPERIMENT_NAME}" ]; then
   EXPERIMENT_NAME=${SLURM_JOB_ID}
 fi
 
@@ -79,11 +81,11 @@ echo "________________________________________"
 echo "Creating directory in scratch disk: ${SCRATCH_DIR}"
 mkdir -p ${SCRATCH_DIR}
 
-if [ -z ${SCRATCH_DATA_DIR} ]; then
+if [ -z "${SCRATCH_DATA_DIR}" ]; then
   SCRATCH_DATA_DIR=${SCRATCH_DIR}/data
 fi
 
-if [ -z ${SCRATCH_OUT_DIR} ]; then
+if [ -z "${SCRATCH_OUT_DIR}" ]; then
   SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/${EXPERIMENT_NAME}
 fi
 
