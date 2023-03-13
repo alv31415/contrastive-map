@@ -2,20 +2,20 @@
 set -e
 
 # gather the files & directories to use
-DEBUG=true
+export DEBUG=true
 STUDENT_ID=$(whoami)
-HOME_DIR=/home/${STUDENT_ID}/honours-project
-EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
-EXPERIMENT_NAME=final_run
+export HOME_DIR=/home/${STUDENT_ID}/honours-project
+export EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
+export EXPERIMENT_NAME=final_run
 
-SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
-SCRATCH_DATA_DIR=${SCRATCH_DIR}/data
-SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/${EXPERIMENT_NAME}
+export SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
+export SCRATCH_DATA_DIR=${SCRATCH_DIR}/data
+export SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/${EXPERIMENT_NAME}
 
 MAIN_FILE=${EXPERIMENT_DIR}/main.py 
 SLURM_RUN_FILE=${EXPERIMENT_DIR}/batch_slurm_contrastive_run.sh
 GEN_EXPERIMENT_FILE=${EXPERIMENT_DIR}/generate_experiments.py
-EXPERIMENT_FILE=${EXPERIMENT_DIR}/experiments.txt
+export EXPERIMENT_FILE=${EXPERIMENT_DIR}/experiments.txt
 
 # generate experiments file
 echo "Generating experiments.txt"
