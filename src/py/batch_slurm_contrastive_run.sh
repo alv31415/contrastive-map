@@ -116,6 +116,7 @@ if [[ "$DEBUG" == "true" ]]; then
   echo "Experiment file: ${EXPERIMENT_FILE}"
   echo "Experiment name: ${EXPERIMENT_NAME}"
   exit
+fi
 
 #rm -rf ${SCRATCH_DATA_DIR}/*.pk ||:
 
