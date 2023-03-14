@@ -20,7 +20,7 @@ logging.info(f"Running main & importing modules...")
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from torchvision.models.resnet import resnet18, ResNet18_Weights, resnet34, ResNet34_Weights, resnet50, ResNet50_Weights
 
 from patch_dataset import CLPatchDataset
@@ -158,7 +158,8 @@ def main(args):
     validation_loader = DataLoader(validation_dataset, batch_size = args.batch_size, shuffle = False, num_workers = 4)
 
     encoder_parameters = {"encoder_layer_idx" : args.encoder_layer_idx,
-                          "use_resnet" : args.encoder != "cnn"}
+                          "use_resnet" : args.encoder != "cnn",
+                          "use_geo_contrastive" : args.use_geo_contrastive}
 
     if args.encoder == "cnn":
         projector_parameters = {"input_dim": 512,
@@ -225,7 +226,7 @@ def main(args):
                         encoder_parameters = encoder_parameters,
                         projector_parameters = projector_parameters,
                         predictor_parameters = predictor_parameters,
-                        ema_tau = args.byol_ema_tau)
+                        ema_tau = args.byol_ema_tau,)
 
         logging.info(f"Using BYOL with tau = {args.byol_ema_tau}, with encoder layer index = {args.encoder_layer_idx}")
     else:
@@ -239,6 +240,7 @@ def main(args):
     model.compile_optimiser(lr = args.lr)
 
     logging.info(f"Using device: {model.device}")
+    logging.info(f"Using geo-contrastive objective: {args.use_geo_contrastive}")
 
     torch.cuda.empty_cache()
 

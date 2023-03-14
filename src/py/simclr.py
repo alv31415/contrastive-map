@@ -53,6 +53,9 @@ class MapSIMCLR(nn.Module):
         self.tau = tau
 
         self.use_resnet = encoder_parameters["use_resnet"]
+        self.use_geo_contrastive = encoder_parameters["use_geo_contrastive"] if "use_geo_contrastive" \
+                                                                                in encoder_parameters else False
+
         
         # define the model
         self.model = EncoderProjectorNN(encoder = encoder,
@@ -123,6 +126,23 @@ class MapSIMCLR(nn.Module):
         std = torch.Tensor([0.229, 0.224, 0.225])
 
         return T.Normalize(mean=mean, std=std)(norm_img)
+
+    def forward(self, x):
+        """
+        Returns the encoding (without projection) of the input, corresponding to the online network.
+        """
+        if self.use_resnet:
+            forward_x = self.img_to_resnet(x)
+        else:
+            forward_x = self.to_tensor(x)
+
+        return self.model.encode(forward_x)
+
+    def compile_optimiser(self, **kwargs):
+        """
+        Sets the optimiser parameters.
+        """
+        self.optimiser = optim.Adam(self.parameters(), **kwargs)
     
     def contrastive_loss(self, z_batch):
         """
@@ -152,24 +172,6 @@ class MapSIMCLR(nn.Module):
         # return the NT-XENT loss
         return 1/N * F.cross_entropy(sim_batch, labels, reduction = "sum")
 
-    def forward(self, x):
-        """
-        Returns the encoding (without projection) of the input, corresponding to the online network.
-        """
-        if self.use_resnet:
-            forward_x = self.img_to_resnet(x)
-        else:
-            forward_x = self.to_tensor(x)
-
-        return self.model.encode(forward_x)
-        
-    
-    def compile_optimiser(self, **kwargs):
-        """
-        Sets the optimiser parameters.
-        """
-        self.optimiser = optim.Adam(self.parameters(), **kwargs)
-
     def get_loss(self, x_1, x_2):
         """
         Computes the loss given positive-pair batches (x_1, x_2)
@@ -181,6 +183,23 @@ class MapSIMCLR(nn.Module):
         z_batch = torch.stack((z_1, z_2), dim=1).view(-1, z_1.shape[1])
 
         return self.contrastive_loss(z_batch)
+
+    def get_geo_loss(self, x_1, x_2, x_3):
+        z_1 = self.model(x_1)
+        z_2 = self.model(x_2)
+        z_3 = self.model(x_3)
+
+        half_dim = z_1.shape[1] // 2
+        similarity_batch = torch.stack((z_1, z_2), dim=1).view(-1, z_1.shape[1])[:, :half_dim]
+        geo_batch = torch.stack((z_1, z_3), dim=1).view(-1, z_1.shape[1])[:, half_dim:]
+
+        similarity_loss = self.contrastive_loss(similarity_batch)
+        geo_loss = self.contrastive_loss(geo_batch)
+
+        w_similarity = 0.7
+        w_geo = 0.3
+
+        return w_similarity * similarity_loss + w_geo * geo_loss
 
     @torch.no_grad()
     def update_checkpoint(self, checkpoint_dir, batch_losses, validation_losses, **checkpoint_data):
@@ -224,8 +243,18 @@ class MapSIMCLR(nn.Module):
             transform_inputs = self.to_tensor
 
         for x_1, x_2 in validation_loader:
-            x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
-            val_losses.append(self.get_loss(x_1, x_2).cpu())
+            if self.use_geo_contrastive:
+                x_2, x_3 = x_2[:, 0, :, :, :].squeeze(dim=1), x_2[:, 1, :, :, :].squeeze(dim=1)
+                x_1, x_2, x_3 = transform_inputs(x_1.to(self.device)), \
+                                transform_inputs(x_2.to(self.device)), \
+                                transform_inputs(x_3.to(self.device))
+                loss = self.get_geo_loss(x_1, x_2, x_3)
+            else:
+                x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
+
+                loss = self.get_loss(x_1, x_2)
+
+            val_losses.append(loss.cpu())
 
         self.train()
 
@@ -255,15 +284,22 @@ class MapSIMCLR(nn.Module):
             avg_batch_losses_20 = []
             logging.info(f"Starting Epoch: {epoch + 1}")
 
-            for batch, (x_1,x_2) in enumerate(train_loader):
+            for batch, (x_1, x_2) in enumerate(train_loader):
                 # x_1 and x_2 are tensors containing patches, 
                 # such that x_1[i] and x_2[i] are patches for the same area
                 
                 self.optimiser.zero_grad()
 
-                x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
+                if self.use_geo_contrastive:
+                    x_2, x_3 = x_2[:, 0, :, :, :].squeeze(dim=1), x_2[:, 1, :, :, :].squeeze(dim=1)
+                    x_1, x_2, x_3 = transform_inputs(x_1.to(self.device)), \
+                                    transform_inputs(x_2.to(self.device)),\
+                                    transform_inputs(x_3.to(self.device))
+                    loss = self.get_geo_loss(x_1, x_2, x_3)
+                else:
+                    x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
 
-                loss = self.get_loss(x_1, x_2)
+                    loss = self.get_loss(x_1, x_2)
 
                 batch_losses.append(loss.cpu().detach())
                 
