@@ -1,0 +1,5 @@
+[default]
+entity = zkbaba
+project = YOLOv5
+base_url = https://api.wandb.ai
+
