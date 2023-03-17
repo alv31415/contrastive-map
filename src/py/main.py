@@ -49,6 +49,8 @@ def get_parser():
                         help="how many times to log training progress per epoch (default: 50)")
     parser.add_argument("--evaluations-per-epoch", type=int, default=50, metavar="N",
                         help="how many times to evaluate model per epoch (default: 50)")
+    parser.add_argument("--patience-prop", type=float, default=0.25, metavar="N",
+                        help="proportion of evaluations in which validation loss doesn't change, before applying stopping (default: 25)")
     parser.add_argument("--train-proportion", type=float, default=0.8, metavar="P",
                         help="proportion of data to be used for training (default: 0.8)")
     parser.add_argument("--validation-proportion", type=float, default=0.1,
@@ -248,7 +250,8 @@ def main(args):
                       epochs=args.epochs,
                       checkpoint_dir=os.path.join(args.output, args.experiment_name),
                       logs_per_epoch = args.logs_per_epoch,
-                      evaluations_per_epoch = args.evaluations_per_epoch
+                      evaluations_per_epoch = args.evaluations_per_epoch,
+                      patience_prop = args.patience_prop
                       )
 
 # --------------------------------------------------- RUN ---------------------------------------------------

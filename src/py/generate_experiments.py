@@ -49,7 +49,8 @@ def get_default_arg_dict(scratch_data_dir, scratch_out_dir):
         "--pretrain-encoder": True,
         "--encoder-layer-idx": -2,
         "--byol-ema-tau": 0.99,
-        "--simclr-tau": 0.99
+        "--simclr-tau": 0.99,
+        "--patience-prop": 0.25
     }
 
 
@@ -104,6 +105,7 @@ def main(args):
     USE_GEO_CONTRASTIVE = False
     ENCODER_LAYER_IDX = -2
     LR = 1e-3
+    PATIENCE_PROP = 0.25
 
     experiment_argss = [
         # 1) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.99
@@ -123,7 +125,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 2) byol, pre-trained resnet18, e = 25, batch size = 64, ema tau= 0.99
         {
@@ -142,7 +145,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 3) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.95
         {
@@ -161,7 +165,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.95
+            "--simclr-tau": 0.95,
+            "--patience-prop": PATIENCE_PROP
         },
         # 4) byol, pre-trained resnet18, e = 25, batch size = 64, ema tau= 0.95
         {
@@ -180,7 +185,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.95,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 5) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.9
         {
@@ -199,7 +205,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.90
+            "--simclr-tau": 0.90,
+            "--patience-prop": PATIENCE_PROP
         },
         # 6) byol, pre-trained resnet18, e = 25, batch size = 64, ema tau= 0.9
         {
@@ -218,7 +225,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.90,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 7) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.8
         {
@@ -237,7 +245,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.80
+            "--simclr-tau": 0.80,
+            "--patience-prop": PATIENCE_PROP
         },
         # 8) byol, pre-trained resnet18, e = 25, batch size = 64, ema tau= 0.8
         {
@@ -256,7 +265,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.80,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 9) simclr, not pre-trained resnet18, e = 25, batch size = 64, temperature= 0.99
         {
@@ -275,7 +285,8 @@ def main(args):
             "--pretrain-encoder": False,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 10) byol, not pre-trained resnet18, e = 25, batch size = 64, ema tau= 0.99
         {
@@ -294,7 +305,8 @@ def main(args):
             "--pretrain-encoder": False,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 11) simclr, pre-trained resnet34, e = 25, batch size = 64, temperature= 0.99
         {
@@ -313,7 +325,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 12) byol, pre-trained resnet34, e = 25, batch size = 64, ema tau= 0.99
         {
@@ -332,7 +345,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 13) simclr, cnn, e = 25, batch size = 64, temperature= 0.99
         {
@@ -351,7 +365,8 @@ def main(args):
             "--pretrain-encoder": False,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 14) byol, cnn, e = 25, batch size = 64, ema tau = 0.99
         {
@@ -370,7 +385,8 @@ def main(args):
             "--pretrain-encoder": False,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 15) simclr, resnet18, e = 25, batch size = 64, temperature = 0.99, patch size = 224
         {
@@ -389,7 +405,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 16) byol, resnet18, e = 25, batch size = 64, ema tau = 0.99, patch size = 224
         {
@@ -408,7 +425,8 @@ def main(args):
             "--pretrain-encoder": False,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 17) simclr, resnet18, e = 25, batch size = 64, temperature = 0.99, lr = 1e-2
         {
@@ -427,7 +445,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         },
         # 18) byol, resnet18, e = 25, batch size = 64, ema tau = 0.99, lr = 1e-2
         {
@@ -446,7 +465,8 @@ def main(args):
             "--pretrain-encoder": True,
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
         }]
     """
     # 19) simclr, resnet18, e = 25, batch size = 64, temperature = 0.99, geo-contrastive objective
@@ -466,7 +486,8 @@ def main(args):
         "--pretrain-encoder": True,
         "--encoder-layer-idx": ENCODER_LAYER_IDX,
         "--byol-ema-tau": 0.99,
-        "--simclr-tau": 0.99
+        "--simclr-tau": 0.99,
+        "--patience-prop": PATIENCE_PROP
     },
     # 20) byol, resnet18, e = 25, batch size = 64, ema tau = 0.99, geo-contrastive objective
     {
@@ -485,7 +506,8 @@ def main(args):
         "--pretrain-encoder": True,
         "--encoder-layer-idx": ENCODER_LAYER_IDX,
         "--byol-ema-tau": 0.99,
-        "--simclr-tau": 0.99
+        "--simclr-tau": 0.99,
+        "--patience-prop": PATIENCE_PROP
     }
     """
 

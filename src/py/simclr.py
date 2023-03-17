@@ -232,7 +232,14 @@ class MapSIMCLR(nn.Module):
 
         return np.mean(val_losses)
     
-    def train_model(self, train_loader, validation_loader, epochs, checkpoint_dir=None, logs_per_epoch=100, evaluations_per_epoch=100):
+    def train_model(self,
+                    train_loader,
+                    validation_loader,
+                    epochs,
+                    checkpoint_dir=None,
+                    logs_per_epoch=100,
+                    evaluations_per_epoch=100,
+                    patience_prop=0.25):
         """
         Trains the network.
         """
@@ -250,10 +257,18 @@ class MapSIMCLR(nn.Module):
         best_validation_loss = float("inf")
         best_model_state_dict = None
 
+        if 0 <= patience_prop <= 1:
+            patience = int(patience_prop * evaluations_per_epoch)
+        else:
+            patience = abs(patience_prop)
+
+        logging.info(f"Early stopping patience set to {patience}")
+
         for epoch in range(epochs):
             batch_losses = []
             validation_losses = []
             avg_batch_losses_20 = []
+            n_runs_no_improvement = 0
             logging.info(f"Starting Epoch: {epoch + 1}")
 
             for batch, (x_1, x_2) in enumerate(train_loader):
@@ -283,9 +298,11 @@ class MapSIMCLR(nn.Module):
                     if validation_loss < best_validation_loss:
                         best_validation_loss = validation_loss
                         best_model_state_dict = self.state_dict()
-                        logging.info(f"Epoch {epoch + 1} ---- New Best NT-XENT Validation Loss = {validation_loss}")
+                        logging.info(f"Epoch {epoch + 1}: New Best NT-XENT Validation Loss = {validation_loss}")
+                        n_runs_no_improvement = 0
                     else:
-                        logging.info(f"Epoch {epoch + 1} ---- NT-XENT Validation Loss = {validation_loss}")
+                        logging.info(f"Epoch {epoch + 1}: NT-XENT Validation Loss = {validation_loss}")
+                        n_runs_no_improvement += 1
 
                     self.update_checkpoint(checkpoint_dir=checkpoint_dir,
                                            batch_losses=batch_losses,
@@ -298,6 +315,12 @@ class MapSIMCLR(nn.Module):
                                            loss=loss.cpu().detach(),
                                            avg_batch_losses_20=avg_batch_losses_20,
                                            run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+
+                    if n_runs_no_improvement >= patience:
+                        logging.info(f"Stopping training, at epoch={epoch + 1}, batch={batch + 1} "
+                                     f"after no validation improvement in {patience} consecutive evaluations")
+
+                        return self.checkpoint
 
             with torch.no_grad():
                 self.update_checkpoint(checkpoint_dir=checkpoint_dir,
