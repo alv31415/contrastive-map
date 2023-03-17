@@ -31,11 +31,11 @@ MAX_PARALLEL_JOBS=8
 echo "________________________________________"
 
 echo "Home directory: ${HOME_DIR}"
-echo "Experiment directory: ${HOME_DIR}"
-echo "Experiment name: ${HOME_DIR}"
-echo "Scratch directory: ${HOME_DIR}"
-echo "Scratch data directory: ${HOME_DIR}"
-echo "Scratch output directory: ${HOME_DIR}"
+echo "Experiment directory: ${EXPERIMENT_DIR}"
+echo "Experiment name: ${EXPERIMENT_NAME}"
+echo "Scratch directory: ${SCRATCH_DIR}"
+echo "Scratch data directory: ${SCRATCH_DATA_DIR}"
+echo "Scratch output directory: ${SCRATCH_OUT_DIR}"
 
 echo "________________________________________"
 
