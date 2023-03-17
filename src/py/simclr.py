@@ -53,9 +53,6 @@ class MapSIMCLR(nn.Module):
         self.tau = tau
 
         self.use_resnet = encoder_parameters["use_resnet"]
-        self.use_geo_contrastive = encoder_parameters["use_geo_contrastive"] if "use_geo_contrastive" \
-                                                                                in encoder_parameters else False
-
         
         # define the model
         self.model = EncoderProjectorNN(encoder = encoder,
@@ -184,23 +181,6 @@ class MapSIMCLR(nn.Module):
 
         return self.contrastive_loss(z_batch)
 
-    def get_geo_loss(self, x_1, x_2, x_3):
-        z_1 = self.model(x_1)
-        z_2 = self.model(x_2)
-        z_3 = self.model(x_3)
-
-        half_dim = z_1.shape[1] // 2
-        similarity_batch = torch.stack((z_1, z_2), dim=1).view(-1, z_1.shape[1])[:, :half_dim]
-        geo_batch = torch.stack((z_1, z_3), dim=1).view(-1, z_1.shape[1])[:, half_dim:]
-
-        similarity_loss = self.contrastive_loss(similarity_batch)
-        geo_loss = self.contrastive_loss(geo_batch)
-
-        w_similarity = 0.7
-        w_geo = 0.3
-
-        return w_similarity * similarity_loss + w_geo * geo_loss
-
     @torch.no_grad()
     def update_checkpoint(self, checkpoint_dir, batch_losses, validation_losses, **checkpoint_data):
         """
@@ -243,16 +223,8 @@ class MapSIMCLR(nn.Module):
             transform_inputs = self.to_tensor
 
         for x_1, x_2 in validation_loader:
-            if self.use_geo_contrastive:
-                x_2, x_3 = x_2[:, 0, :, :, :].squeeze(dim=1), x_2[:, 1, :, :, :].squeeze(dim=1)
-                x_1, x_2, x_3 = transform_inputs(x_1.to(self.device)), \
-                                transform_inputs(x_2.to(self.device)), \
-                                transform_inputs(x_3.to(self.device))
-                loss = self.get_geo_loss(x_1, x_2, x_3)
-            else:
-                x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
-
-                loss = self.get_loss(x_1, x_2)
+            x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
+            loss = self.get_loss(x_1, x_2)
 
             val_losses.append(loss.cpu())
 
@@ -290,16 +262,8 @@ class MapSIMCLR(nn.Module):
                 
                 self.optimiser.zero_grad()
 
-                if self.use_geo_contrastive:
-                    x_2, x_3 = x_2[:, 0, :, :, :].squeeze(dim=1), x_2[:, 1, :, :, :].squeeze(dim=1)
-                    x_1, x_2, x_3 = transform_inputs(x_1.to(self.device)), \
-                                    transform_inputs(x_2.to(self.device)),\
-                                    transform_inputs(x_3.to(self.device))
-                    loss = self.get_geo_loss(x_1, x_2, x_3)
-                else:
-                    x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
-
-                    loss = self.get_loss(x_1, x_2)
+                x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
+                loss = self.get_loss(x_1, x_2)
 
                 batch_losses.append(loss.cpu().detach())
                 

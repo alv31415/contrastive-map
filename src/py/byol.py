@@ -157,18 +157,6 @@ class MapBYOL(nn.Module):
 
         return T.Normalize(mean=mean, std=std)(norm_img)
 
-    def byol_loss(self, x_1, x_2):
-        """
-        The BYOL loss, as stated in the BYOL paper (this applies to positive-pair batches x_1, x_2).
-        Firstly, normalises the embeddings to unit vectors.
-        Then, computes the dot product between positive-pair embeddings.
-        The factors of 2 could be removed, but are maintained for consistency with the paper.
-        """
-        norm_x_1 = F.normalize(x_1, dim=-1, p=2)
-        norm_x_2 = F.normalize(x_2, dim=-1, p=2)
-
-        return 2 - 2 * (norm_x_1 * norm_x_2).sum(dim=-1)
-
     def forward(self, x):
         """
         Returns the encoding (without projection) of the input, corresponding to the online network.
@@ -185,6 +173,18 @@ class MapBYOL(nn.Module):
         Sets the optimiser parameters.
         """
         self.optimiser = optim.Adam(self.parameters(), **kwargs)
+
+    def byol_loss(self, x_1, x_2):
+        """
+        The BYOL loss, as stated in the BYOL paper (this applies to positive-pair batches x_1, x_2).
+        Firstly, normalises the embeddings to unit vectors.
+        Then, computes the dot product between positive-pair embeddings.
+        The factors of 2 could be removed, but are maintained for consistency with the paper.
+        """
+        norm_x_1 = F.normalize(x_1, dim=-1, p=2)
+        norm_x_2 = F.normalize(x_2, dim=-1, p=2)
+
+        return 2 - 2 * (norm_x_1 * norm_x_2).sum(dim=-1)
 
     def get_loss(self, x_1, x_2):
         """
@@ -315,7 +315,7 @@ class MapBYOL(nn.Module):
                         logging.info(
                             f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Training Loss = {avg_loss}")
 
-                if batch % (len(train_loader) // (logs_per_epoch // 4) + 1) == 0:
+                if batch % (len(train_loader) // evaluations_per_epoch + 1) == 0:
                     validation_loss = self.get_validation_loss(validation_loader)
                     validation_losses.append(validation_loss)
 
