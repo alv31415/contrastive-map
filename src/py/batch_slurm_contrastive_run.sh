@@ -3,10 +3,10 @@
 #SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-%A_%a.out
 #SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=2
-#SBATCH --nodelist=landonia[23-24]
+#SBATCH --nodelist=landonia23,landonia24
 #SBATCH --gres=gpu:1
 #SBATCH --mem=12GB
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=2
 #SBATCH --time=3-08:00:00
 #SBATCH --partition=Teach-LongJobs
 #SBATCH --mail-type=begin        # send mail when job begins

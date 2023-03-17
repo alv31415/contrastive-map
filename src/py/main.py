@@ -156,8 +156,14 @@ def main(args):
     logging.info(f"Generated test dataset with {len(test_dataset)} samples.")
 
     # create the DataLoader object
-    train_loader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
-    validation_loader = DataLoader(validation_dataset, batch_size = args.batch_size, shuffle = False, num_workers = 4)
+    train_loader = DataLoader(train_dataset,
+                              batch_size = args.batch_size,
+                              shuffle = True,
+                              num_workers = os.cpu_count())
+    validation_loader = DataLoader(validation_dataset,
+                                   batch_size = args.batch_size,
+                                   shuffle = False,
+                                   num_workers = os.cpu_count())
 
     encoder_parameters = {"encoder_layer_idx" : args.encoder_layer_idx,
                           "use_resnet" : args.encoder != "cnn"}
