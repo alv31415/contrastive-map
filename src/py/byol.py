@@ -355,7 +355,7 @@ class MapBYOL(nn.Module):
                                            avg_batch_losses_20=avg_batch_losses_20,
                                            run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-                    if n_runs_no_improvement >= patience:
+                    if n_runs_no_improvement >= patience and epoch > 4:
                         logging.info(f"Stopping training, at epoch={epoch + 1}, batch={batch + 1} "
                                      f"after no validation improvement in {patience} consecutive evaluations")
 

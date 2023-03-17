@@ -105,7 +105,7 @@ def main(args):
     USE_GEO_CONTRASTIVE = False
     ENCODER_LAYER_IDX = -2
     LR = 1e-3
-    PATIENCE_PROP = 0.25
+    PATIENCE_PROP = 0.35
 
     experiment_argss = [
         # 1) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.99
