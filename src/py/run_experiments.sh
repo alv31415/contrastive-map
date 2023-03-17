@@ -28,6 +28,17 @@ echo "experiments.txt created successfully"
 N_EXPERIMENTS=$(cat ${EXPERIMENT_FILE} | wc -l) 
 MAX_PARALLEL_JOBS=8
 
+echo "________________________________________"
+
+echo "Home directory: ${HOME_DIR}"
+echo "Experiment directory: ${HOME_DIR}"
+echo "Experiment name: ${HOME_DIR}"
+echo "Scratch directory: ${HOME_DIR}"
+echo "Scratch data directory: ${HOME_DIR}"
+echo "Scratch output directory: ${HOME_DIR}"
+
+echo "________________________________________"
+
 echo "${N_EXPERIMENTS} found. Running with maximum ${MAX_PARALLEL_JOBS} parallel jobs."
 
 # run sbatch job
