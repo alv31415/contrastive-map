@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#SBATCH --job-name=${EXPERIMENT_NAME}
 #SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-%A_%a.out
 #SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=2

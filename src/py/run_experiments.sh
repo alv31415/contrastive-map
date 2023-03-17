@@ -2,7 +2,7 @@
 set -e
 
 # gather the files & directories to use
-export DEBUG=true
+export DEBUG=false
 STUDENT_ID=$(whoami)
 export HOME_DIR=/home/${STUDENT_ID}/honours-project
 export EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
