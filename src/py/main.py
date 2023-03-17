@@ -158,8 +158,7 @@ def main(args):
     validation_loader = DataLoader(validation_dataset, batch_size = args.batch_size, shuffle = False, num_workers = 4)
 
     encoder_parameters = {"encoder_layer_idx" : args.encoder_layer_idx,
-                          "use_resnet" : args.encoder != "cnn",
-                          "use_geo_contrastive" : args.use_geo_contrastive}
+                          "use_resnet" : args.encoder != "cnn"}
 
     if args.encoder == "cnn":
         projector_parameters = {"input_dim": 512,
@@ -240,7 +239,6 @@ def main(args):
     model.compile_optimiser(lr = args.lr)
 
     logging.info(f"Using device: {model.device}")
-    logging.info(f"Using geo-contrastive objective: {args.use_geo_contrastive}")
 
     torch.cuda.empty_cache()
 

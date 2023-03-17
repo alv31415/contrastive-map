@@ -452,6 +452,7 @@ def main(args):
             "--byol-ema-tau": 0.99,
             "--simclr-tau": 0.99
         },
+        """
         # 19) simclr, resnet18, e = 25, batch size = 64, temperature = 0.99, geo-contrastive objective
         {
             "--batch-size": BATCH_SIZE,
@@ -490,6 +491,7 @@ def main(args):
             "--byol-ema-tau": 0.99,
             "--simclr-tau": 0.99
         }
+        """
     ]
 
     """
