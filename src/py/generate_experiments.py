@@ -93,10 +93,6 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, experiment_a
 
 
 def main(args):
-    # current run
-
-    # previous runs
-
     BATCH_SIZE = 64
     PATCH_SIZE = 128
     EPOCHS = 25
@@ -451,87 +447,46 @@ def main(args):
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
             "--simclr-tau": 0.99
-        },
-        """
-        # 19) simclr, resnet18, e = 25, batch size = 64, temperature = 0.99, geo-contrastive objective
-        {
-            "--batch-size": BATCH_SIZE,
-            "--patch-size": 128,
-            "--epochs": EPOCHS,
-            "--seed": SEED,
-            "--lr": 1e-3,
-            "--logs-per-epoch": LOGS_PER_EPOCH,
-            "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
-            "--train-proportion": TRAIN_PROPORTION,
-            "--validation-proportion": EVALUATION_PROPORTION,
-            "--use-byol": False,
-            "--use-geo-contrastive": True,
-            "--encoder": "resnet18",
-            "--pretrain-encoder": True,
-            "--encoder-layer-idx": ENCODER_LAYER_IDX,
-            "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
-        },
-        # 20) byol, resnet18, e = 25, batch size = 64, ema tau = 0.99, geo-contrastive objective
-        {
-            "--batch-size": BATCH_SIZE,
-            "--patch-size": 128,
-            "--epochs": EPOCHS,
-            "--seed": SEED,
-            "--lr": 1e-3,
-            "--logs-per-epoch": LOGS_PER_EPOCH,
-            "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
-            "--train-proportion": TRAIN_PROPORTION,
-            "--validation-proportion": EVALUATION_PROPORTION,
-            "--use-byol": True,
-            "--use-geo-contrastive": True,
-            "--encoder": "resnet18",
-            "--pretrain-encoder": True,
-            "--encoder-layer-idx": ENCODER_LAYER_IDX,
-            "--byol-ema-tau": 0.99,
-            "--simclr-tau": 0.99
-        }
-        """
-    ]
-
+        }]
     """
-    SLRUM JOB ID: 1507975
-    experiment_argss = [{"--epochs": 5, "--patch-size": 64, "--batch-size" : 32},
-                    {"--epochs": 5, "--patch-size": 32, "--batch-size" : 32},
-                    {"--epochs": 5, "--patch-size": 128, "--batch-size" : 32}
-                    ]
-
-    SLRUM JOB ID: 1507981
-    experiment_argss = [{"--epochs": 5, "--use-byol": False, "--encoder-layer-idx": -2},
-                        {"--epochs": 5, "--pretrain-encoder": False},
-                        {"--epochs": 5, "--pretrain-encoder": False, "--encoder": "resnet34"},
-                        {"--epochs": 5, "--pretrain-encoder": False, "--encoder": "cnn", "--encoder-layer-idx": -1},
-                        {"--epochs": 5, "--encoder": "resnet34"},
-                        {"--epochs": 5, "--byol-ema-tau": 0.95},
-                        {"--epochs": 5, "--byol-ema-tau": 0.9},
-                        {"--epochs": 5, "--byol-ema-tau": 0.8}
-                        ]
-    """
-    """
-    SLURM JOB ID: 1512856
-    experiment_argss = [{"--epochs": 5, "--use-byol": False, "--encoder-layer-idx": -2, "--patch-size": 128},
-                        {"--epochs": 5, "--encoder": "cnn", "--encoder-layer-idx": -1, "--patch-size": 128},
-                        {"--epochs": 5, "--encoder": "resnet34", "--encoder-layer-idx": -2, "--patch-size": 128},
-                        {"--epochs": 5, "--encoder": "resnet50", "--encoder-layer-idx": -2, "--patch-size": 128}
-                        ]
-    """
-    """
-    1519859
-    experiment_argss = [{"--epochs": 5, "--use-byol": False, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": False},
-                        {"--epochs": 5, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": False},
-                        {"--epochs": 5, "--byol-ema-tau": 0.95, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
-                        {"--epochs": 5, "--byol-ema-tau": 0.9, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
-                        {"--epochs": 5, "--byol-ema-tau": 0.8, "--use-byol": True, "--encoder-layer-idx": -2, "--patch-size": 128, "--pretrain-encoder": True},
-                        {"--epochs": 5, "--encoder": "cnn", "--encoder-layer-idx": -1, "--patch-size": 128},
-                        ]
-    """
-    """
-    experiment_argss = [{"--epochs": 5, "--encoder": "cnn", "--encoder-layer-idx": -1, "--patch-size": 128}]
+    # 19) simclr, resnet18, e = 25, batch size = 64, temperature = 0.99, geo-contrastive objective
+    {
+        "--batch-size": BATCH_SIZE,
+        "--patch-size": 128,
+        "--epochs": EPOCHS,
+        "--seed": SEED,
+        "--lr": 1e-3,
+        "--logs-per-epoch": LOGS_PER_EPOCH,
+        "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
+        "--train-proportion": TRAIN_PROPORTION,
+        "--validation-proportion": EVALUATION_PROPORTION,
+        "--use-byol": False,
+        "--use-geo-contrastive": True,
+        "--encoder": "resnet18",
+        "--pretrain-encoder": True,
+        "--encoder-layer-idx": ENCODER_LAYER_IDX,
+        "--byol-ema-tau": 0.99,
+        "--simclr-tau": 0.99
+    },
+    # 20) byol, resnet18, e = 25, batch size = 64, ema tau = 0.99, geo-contrastive objective
+    {
+        "--batch-size": BATCH_SIZE,
+        "--patch-size": 128,
+        "--epochs": EPOCHS,
+        "--seed": SEED,
+        "--lr": 1e-3,
+        "--logs-per-epoch": LOGS_PER_EPOCH,
+        "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
+        "--train-proportion": TRAIN_PROPORTION,
+        "--validation-proportion": EVALUATION_PROPORTION,
+        "--use-byol": True,
+        "--use-geo-contrastive": True,
+        "--encoder": "resnet18",
+        "--pretrain-encoder": True,
+        "--encoder-layer-idx": ENCODER_LAYER_IDX,
+        "--byol-ema-tau": 0.99,
+        "--simclr-tau": 0.99
+    }
     """
 
     experiment_run_args = [create_experiment(main_file=args.main,
