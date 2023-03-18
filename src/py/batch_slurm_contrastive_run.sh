@@ -2,7 +2,7 @@
 
 #SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-%A_%a.out
 #SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/slurm-err-%A_%a.out
-#SBATCH --nodes=1
+#SBATCH --nodes=1-2
 #SBATCH --nodelist=landonia[23,24]
 #SBATCH --gres=gpu:1
 #SBATCH --mem=12GB
