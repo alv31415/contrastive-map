@@ -65,8 +65,8 @@ class CNN(nn.Module):
                     use_batch_norm=use_batch_norm, use_pool=True),
             CNNCell(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1,
                     use_batch_norm=use_batch_norm, use_pool=True),
-            nn.Flatten() if use_flatten else GlobalAveragePooling(self.global_avg_pooling_features),
-            nn.Linear(in_features=self.lin_in_features, out_features=output_dim, bias=use_bias)
+            nn.Flatten() if use_flatten else GlobalAveragePooling(self.global_avg_pooling_features)
+            #nn.Linear(in_features=self.lin_in_features, out_features=output_dim, bias=use_bias)
         )
 
     def forward(self, x):
