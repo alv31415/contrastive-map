@@ -21,8 +21,43 @@ import torch.nn.functional as F
 from mlp import MLP
 from encoder_projector_nn import EncoderProjectorNN
 
-class MapSIMCLR(nn.Module):
-    def __init__(self, encoder, encoder_parameters, projector_parameters, tau):
+
+class SimGeoProjector(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, activation=nn.ReLU(), use_bias=True, use_batch_norm=True):
+        super(SimGeoProjector, self).__init__()
+
+        self.sim_projector = MLP(input_dim=input_dim,
+                                 hidden_dim=hidden_dim,
+                                 output_dim=output_dim,
+                                 activation=activation,
+                                 use_bias=use_bias,
+                                 use_batch_norm=use_batch_norm)
+        self.geo_projector = MLP(input_dim=input_dim,
+                                 hidden_dim=hidden_dim,
+                                 output_dim=output_dim,
+                                 activation=activation,
+                                 use_bias=use_bias,
+                                 use_batch_norm=use_batch_norm)
+
+    def sim_project(self, x):
+        half_dim = x.shape[1] // 2
+        return self.sim_projector(x[:, :half_dim])
+
+    def geo_project(self, x):
+        half_dim = x.shape[1] // 2
+        return self.sim_projector(x[:, half_dim:])
+
+    def forward(self, x):
+        half_dim = x.shape[1] // 2
+        sim_projection = self.sim_project(x)
+        geo_projection = self.geo_project(x)
+
+        return torch.cat([sim_projection, geo_projection], dim=1)
+
+
+
+class GeoMapSIMCLR(nn.Module):
+    def __init__(self, encoder, encoder_parameters, projector_parameters, tau, sim_weight):
         """
         encoder: a nn.Module, containing an encoder network.
         encoder_parameters: a dict with 2 keys:
@@ -38,33 +73,47 @@ class MapSIMCLR(nn.Module):
         projector_parameters: a dict, containing the parameters to initialise an MLP to act as
                               a predictor network.
         tau: temperature parameter for NT-XENT loss
+        sim_weight: weighting assigned to similarity loss
         """
-        super(MapSIMCLR, self).__init__()
+        super(GeoMapSIMCLR, self).__init__()
 
         self.kwargs = {"encoder": encoder,
                        "encoder_parameters": encoder_parameters,
                        "projector_parameters": projector_parameters,
-                       "tau": tau}
-        
+                       "tau": tau,
+                       "sim_weight": sim_weight}
+
         # model constants
         self.MAX_PIXEL_VALUE = 255
         self.RESNET_DIM = 224
 
         self.tau = tau
 
+        if not 0 <= sim_weight <= 1:
+            logging.info(f"Invalid similarity weight {sim_weight} (must be between 0 and 1). Setting to sim_weight = 1.")
+            self.sim_weight = 1
+        else:
+            self.sim_weight = sim_weight
+
         self.use_resnet = encoder_parameters["use_resnet"]
-        
+
+        self.half_projector_parameters = {param_name : param_value // 2
+                                          for param_name, param_value
+                                          in projector_parameters.items()}
+
+        self.projector = SimGeoProjector(**self.half_projector_parameters)
+
         # define the model
-        self.model = EncoderProjectorNN(encoder = encoder,
-                                        projector = MLP(**projector_parameters),
-                                        encoder_layer_idx = encoder_parameters["encoder_layer_idx"])
-        
+        self.model = EncoderProjectorNN(encoder=encoder,
+                                        projector=self.projector,
+                                        encoder_layer_idx=encoder_parameters["encoder_layer_idx"])
+
         # define optimiser
         self.optimiser = None
 
         # get the device
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        
+
         # create checkpoint
         self.checkpoint = {"epoch": 0,
                            "batch": 0,
@@ -140,12 +189,12 @@ class MapSIMCLR(nn.Module):
         Sets the optimiser parameters.
         """
         self.optimiser = optim.Adam(self.parameters(), **kwargs)
-    
+
     def contrastive_loss(self, z_batch):
         """
         Computes the contrastive loss (NT-XENT) for a mini-batch of augmented samples.
         --------------------------------------------------------------------------------------------------------
-        z_batch: a (N,K) Tensor, with rows as embedding vectors. 
+        z_batch: a (N,K) Tensor, with rows as embedding vectors.
                  We expect that z_batch[2k] and z_batch[2k+1], 0 <= k < N, correspond to a positive sample pair
         --------------------------------------------------------------------------------------------------------
         return: a float, corresponding to the total loss for the mini-batch z_batch
@@ -156,7 +205,7 @@ class MapSIMCLR(nn.Module):
         norm_z_batch = F.normalize(z_batch)
 
         # compute similarity & apply factor of tau
-        sim_batch = (norm_z_batch @ norm_z_batch.T)/self.tau
+        sim_batch = (norm_z_batch @ norm_z_batch.T) / self.tau
 
         # fill the diagonal with -1000, to make sure it is never considered in the cross entropy computations
         sim_batch.fill_diagonal_(-1000)
@@ -164,22 +213,36 @@ class MapSIMCLR(nn.Module):
         # generate labels
         # z_batch[2k] should be similar to z_batch[2k+1] (since these will be the positive pair)
         # hence, labels should have the form [1,0,3,2,...,N,N-1]
-        labels = torch.Tensor([k+1 if k%2 == 0 else k-1 for k in range(0,N)]).long().to(self.device)
+        labels = torch.Tensor([k + 1 if k % 2 == 0 else k - 1 for k in range(0, N)]).long().to(self.device)
 
         # return the NT-XENT loss
-        return 1/N * F.cross_entropy(sim_batch, labels, reduction = "sum")
+        return 1 / N * F.cross_entropy(sim_batch, labels, reduction="sum")
 
-    def get_loss(self, x_1, x_2):
+    def get_loss(self, x_1, x_2, x_3):
         """
-        Computes the loss given positive-pair batches (x_1, x_2)
+        Computes the loss given positive-pair batches (x_1, x_2) and geo-adjacent batches (x_1, x_3)
         """
 
         z_1 = self.model(x_1)
         z_2 = self.model(x_2)
+        z_3 = self.model(x_3)
 
-        z_batch = torch.stack((z_1, z_2), dim=1).view(-1, z_1.shape[1])
+        sim_z_1 = z_1[0]
+        geo_z_1 = z_1[1]
 
-        return self.contrastive_loss(z_batch)
+        sim_z_2 = z_2[0]
+
+        geo_z_3 = z_3[1]
+
+        sim_z_batch = torch.stack((sim_z_1, sim_z_2), dim=1).view(-1, sim_z_1.shape[1])
+        geo_z_batch = torch.stack((geo_z_1, geo_z_3), dim=1).view(-1, sim_z_1.shape[1])
+
+        sim_loss = self.contrastive_loss(sim_z_batch)
+        geo_loss = self.contrastive_loss(geo_z_batch)
+
+        geo_weight = 1 - self.sim_weight
+
+        return sim_loss * self.sim_weight + geo_loss * geo_weight
 
     @torch.no_grad()
     def update_checkpoint(self, checkpoint_dir, batch_losses, validation_losses, **checkpoint_data):
@@ -204,7 +267,7 @@ class MapSIMCLR(nn.Module):
                 pk.dump(batch_losses, f)
 
             batch_loss_validation_dir = os.path.join(checkpoint_dir,
-                                                f"batch_loss_logs_v{checkpoint_data.get('epoch', 0)}.pk")
+                                                     f"batch_loss_logs_v{checkpoint_data.get('epoch', 0)}.pk")
             with open(batch_loss_validation_dir, "wb") as f:
                 pk.dump(validation_losses, f)
 
@@ -223,15 +286,18 @@ class MapSIMCLR(nn.Module):
             transform_inputs = self.to_tensor
 
         for x_1, x_2 in validation_loader:
-            x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
-            loss = self.get_loss(x_1, x_2)
+            x_2, x_3 = x_2[:, 0, :, :, :].squeeze(dim=1), x_2[:, 1, :, :, :].squeeze(dim=1)
+            x_1, x_2, x_3 = transform_inputs(x_1.to(self.device)), \
+                            transform_inputs(x_2.to(self.device)), \
+                            transform_inputs(x_3.to(self.device))
+            loss = self.get_geo_loss(x_1, x_2, x_3)
 
             val_losses.append(loss.cpu())
 
         self.train()
 
         return np.mean(val_losses)
-    
+
     def train_model(self,
                     train_loader,
                     validation_loader,
@@ -272,16 +338,19 @@ class MapSIMCLR(nn.Module):
             logging.info(f"Starting Epoch: {epoch + 1}")
 
             for batch, (x_1, x_2) in enumerate(train_loader):
-                # x_1 and x_2 are tensors containing patches, 
+                # x_1 and x_2 are tensors containing patches,
                 # such that x_1[i] and x_2[i] are patches for the same area
-                
+
                 self.optimiser.zero_grad()
 
-                x_1, x_2 = transform_inputs(x_1.to(self.device)), transform_inputs(x_2.to(self.device))
-                loss = self.get_loss(x_1, x_2)
+                x_2, x_3 = x_2[:, 0, :, :, :].squeeze(dim=1), x_2[:, 1, :, :, :].squeeze(dim=1)
+                x_1, x_2, x_3 = transform_inputs(x_1.to(self.device)), \
+                                transform_inputs(x_2.to(self.device)), \
+                                transform_inputs(x_3.to(self.device))
+                loss = self.get_loss(x_1, x_2, x_3)
 
                 batch_losses.append(loss.cpu().detach())
-                
+
                 loss.backward()
                 self.optimiser.step()
 
@@ -289,7 +358,8 @@ class MapSIMCLR(nn.Module):
                     with torch.no_grad():
                         avg_loss = np.mean(batch_losses[-20:])
                         avg_batch_losses_20.append(avg_loss)
-                        logging.info(f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Training Loss = {avg_loss}")
+                        logging.info(
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Training Loss = {avg_loss}")
 
                 if batch % (len(train_loader) // evaluations_per_epoch) == 0:
                     validation_loss = self.get_validation_loss(validation_loader)
@@ -298,10 +368,12 @@ class MapSIMCLR(nn.Module):
                     if validation_loss < best_validation_loss:
                         best_validation_loss = validation_loss
                         best_model_state_dict = self.state_dict()
-                        logging.info(f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- New Best NT-XENT Validation Loss = {validation_loss}")
+                        logging.info(
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- New Best NT-XENT Validation Loss = {validation_loss}")
                         n_runs_no_improvement = 0
                     else:
-                        logging.info(f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Validation Loss = {validation_loss}")
+                        logging.info(
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Validation Loss = {validation_loss}")
                         n_runs_no_improvement += 1
 
                     self.update_checkpoint(checkpoint_dir=checkpoint_dir,

@@ -323,14 +323,14 @@ class MapBYOL(nn.Module):
                 self.optimiser.step()
                 self.update_target_network()
 
-                if batch % (len(train_loader) // logs_per_epoch + 1) == 0 and batch != 0:
+                if batch % (len(train_loader) // logs_per_epoch) == 0 and batch != 0:
                     with torch.no_grad():
                         avg_loss = np.mean(batch_losses[-20:])
                         avg_batch_losses_20.append(avg_loss)
                         logging.info(
                             f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- BYOL Training Loss = {avg_loss}")
 
-                if batch % (len(train_loader) // evaluations_per_epoch + 1) == 0:
+                if batch % (len(train_loader) // evaluations_per_epoch) == 0:
                     validation_loss = self.get_validation_loss(validation_loader)
                     validation_losses.append(validation_loss)
 
@@ -355,9 +355,12 @@ class MapBYOL(nn.Module):
                                            avg_batch_losses_20=avg_batch_losses_20,
                                            run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-                    if n_runs_no_improvement >= patience and epoch > 4:
+                    if (n_runs_no_improvement >= patience and epoch > 4) \
+                            or n_runs_no_improvement >= evaluations_per_epoch:
                         logging.info(f"Stopping training, at epoch={epoch + 1}, batch={batch + 1} "
-                                     f"after no validation improvement in {patience} consecutive evaluations")
+                                     f"after no validation improvement in {patience} consecutive evaluations "
+                                     f"after 5 epochs, or no improvement during a whole epoch.\n"
+                                     f"Best Validation: {best_validation_loss}")
 
                         return self.checkpoint
 
