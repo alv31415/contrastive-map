@@ -44,6 +44,7 @@ echo "${N_EXPERIMENTS} found. Running with maximum ${MAX_PARALLEL_JOBS} parallel
 # run sbatch job
 echo "Running batch job: sbatch --array=1-${N_EXPERIMENTS}%${MAX_PARALLEL_JOBS} ${SLURM_RUN_FILE} ${EXPERIMENT_FILE}"
 sbatch --array=1-${N_EXPERIMENTS}%${MAX_PARALLEL_JOBS}  \
-       --distribution=cyclic \
+       --ntasks-per-node=6
+       --nodelist=landonia23,landonia24 \
        --export=ALL \
        ${SLURM_RUN_FILE}
