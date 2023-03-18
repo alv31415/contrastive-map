@@ -26,7 +26,7 @@ python ${GEN_EXPERIMENT_FILE} --main ${MAIN_FILE} \
 echo "experiments.txt created successfully"
 
 N_EXPERIMENTS=$(cat ${EXPERIMENT_FILE} | wc -l) 
-MAX_PARALLEL_JOBS=20
+MAX_PARALLEL_JOBS=14
 
 echo "________________________________________"
 
