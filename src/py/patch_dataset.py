@@ -52,7 +52,7 @@ class CLPatchDataset(Dataset):
         logging.info(
             f"Files in first directory: {os.listdir(os.path.join(map_directory, os.listdir(map_directory)[0]))}")
 
-        for folder in os.listdir(map_directory):
+        for folder in sorted(os.listdir(map_directory)):
             if folder.isdigit():
                 if verbose:
                     logging.info(f"Fetching patches from folder: {folder}")
