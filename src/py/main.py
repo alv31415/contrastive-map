@@ -27,6 +27,7 @@ from patch_dataset import CLPatchDataset
 from geo_patch_dataset import GeoPatchDataset
 from byol import MapBYOL
 from simclr import MapSIMCLR
+from geo_simclr import GeoMapSIMCLR
 from cnn import CNN
 
 # --------------------------------------------------- PARSER ---------------------------------------------------
@@ -246,6 +247,15 @@ def main(args):
                           tau = args.simclr_tau)
 
         logging.info(f"Using SimCLR with tau = {args.simclr_tau}, with encoder layer index = {args.encoder_layer_idx}")
+
+    if args.use_geo_contrastive:
+        model = GeoMapSIMCLR(encoder=encoder,
+                             encoder_parameters=encoder_parameters,
+                             projector_parameters=projector_parameters,
+                             tau=args.simclr_tau,
+                             sim_weight=0.7)
+
+        logging.info(f"Using GeoSimCLR with tau = {args.simclr_tau}, with encoder layer index = {args.encoder_layer_idx}")
 
     model.compile_optimiser(lr = args.lr)
 

@@ -99,60 +99,35 @@ def main(args):
     EPOCHS = 25
     SEED = 23
     LOGS_PER_EPOCH = 50
-    EVALUATIONS_PER_EPOCH = 100
+    EVALUATIONS_PER_EPOCH = 150
     TRAIN_PROPORTION = 0.8
     EVALUATION_PROPORTION = 0.1
     USE_GEO_CONTRASTIVE = False
     ENCODER_LAYER_IDX = -2
     LR = 1e-3
-    PATIENCE_PROP = 0.35
-
-    """
-    # 1) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.99
-    {
-        "--batch-size": BATCH_SIZE,
-        "--patch-size": PATCH_SIZE,
-        "--epochs": EPOCHS,
-        "--seed": SEED,
-        "--lr": LR,
-        "--logs-per-epoch": LOGS_PER_EPOCH,
-        "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
-        "--train-proportion": TRAIN_PROPORTION,
-        "--validation-proportion": EVALUATION_PROPORTION,
-        "--use-byol": False,
-        "--use-geo-contrastive": USE_GEO_CONTRASTIVE,
-        "--encoder": "resnet18",
-        "--pretrain-encoder": True,
-        "--encoder-layer-idx": ENCODER_LAYER_IDX,
-        "--byol-ema-tau": 0.99,
-        "--simclr-tau": 0.99,
-        "--patience-prop": PATIENCE_PROP
-    },
-    """
-    """
-    # 3) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.95
-    {
-        "--batch-size": BATCH_SIZE,
-        "--patch-size": PATCH_SIZE,
-        "--epochs": EPOCHS,
-        "--seed": SEED,
-        "--lr": LR,
-        "--logs-per-epoch": LOGS_PER_EPOCH,
-        "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
-        "--train-proportion": TRAIN_PROPORTION,
-        "--validation-proportion": EVALUATION_PROPORTION,
-        "--use-byol": False,
-        "--use-geo-contrastive": USE_GEO_CONTRASTIVE,
-        "--encoder": "resnet18",
-        "--pretrain-encoder": True,
-        "--encoder-layer-idx": ENCODER_LAYER_IDX,
-        "--byol-ema-tau": 0.99,
-        "--simclr-tau": 0.95,
-        "--patience-prop": PATIENCE_PROP
-    },
-    """
+    PATIENCE_PROP = 0.4
 
     experiment_argss = [
+        # 1) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.99
+        {
+            "--batch-size": BATCH_SIZE,
+            "--patch-size": PATCH_SIZE,
+            "--epochs": EPOCHS,
+            "--seed": SEED,
+            "--lr": LR,
+            "--logs-per-epoch": LOGS_PER_EPOCH,
+            "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": EVALUATION_PROPORTION,
+            "--use-byol": False,
+            "--use-geo-contrastive": USE_GEO_CONTRASTIVE,
+            "--encoder": "resnet18",
+            "--pretrain-encoder": True,
+            "--encoder-layer-idx": ENCODER_LAYER_IDX,
+            "--byol-ema-tau": 0.99,
+            "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
+        },
         # 2) byol, pre-trained resnet18, e = 25, batch size = 64, ema tau= 0.99
         {
             "--batch-size": BATCH_SIZE,
@@ -171,6 +146,26 @@ def main(args):
             "--encoder-layer-idx": ENCODER_LAYER_IDX,
             "--byol-ema-tau": 0.99,
             "--simclr-tau": 0.99,
+            "--patience-prop": PATIENCE_PROP
+        },
+        # 3) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.95
+        {
+            "--batch-size": BATCH_SIZE,
+            "--patch-size": PATCH_SIZE,
+            "--epochs": EPOCHS,
+            "--seed": SEED,
+            "--lr": LR,
+            "--logs-per-epoch": LOGS_PER_EPOCH,
+            "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": EVALUATION_PROPORTION,
+            "--use-byol": False,
+            "--use-geo-contrastive": USE_GEO_CONTRASTIVE,
+            "--encoder": "resnet18",
+            "--pretrain-encoder": True,
+            "--encoder-layer-idx": ENCODER_LAYER_IDX,
+            "--byol-ema-tau": 0.99,
+            "--simclr-tau": 0.95,
             "--patience-prop": PATIENCE_PROP
         },
             # 4) byol, pre-trained resnet18, e = 25, batch size = 64, ema tau= 0.95
@@ -427,7 +422,7 @@ def main(args):
                 "--use-byol": True,
                 "--use-geo-contrastive": USE_GEO_CONTRASTIVE,
                 "--encoder": "resnet18",
-                "--pretrain-encoder": False,
+                "--pretrain-encoder": True,
                 "--encoder-layer-idx": ENCODER_LAYER_IDX,
                 "--byol-ema-tau": 0.99,
                 "--simclr-tau": 0.99,
