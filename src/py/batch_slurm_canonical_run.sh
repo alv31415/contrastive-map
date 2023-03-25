@@ -59,7 +59,7 @@ SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/
 SCRATCH_CHECKPOINT_DIR_SIMCLR=${SCRATCH_OUT_DIR}/final_run_2/s-cnn-e25-b64-t0_99-lr0_001-p128
 SCRATCH_CHECKPOINT_DIR_BYOL=${SCRATCH_OUT_DIR}/final_run_2/b-presnet18-e25-b64-t0_80-lr0_001-p128
 
-EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output/canonical
+EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
 
 EXPERIMENT_CHECKPOINT_DIR_SIMCLR=${EXPERIMENT_OUT_DIR}/final_run_2/s-cnn-e25-b64-t0_99-lr0_001-p128
 EXPERIMENT_CHECKPOINT_DIR_BYOL=${EXPERIMENT_OUT_DIR}/final_run_2/b-presnet18-e25-b64-t0_80-lr0_001-p128
@@ -99,7 +99,7 @@ echo "________________________________________"
 
 # transfer the output file from scratch
 echo "Transferring files from ${SCRATCH_OUT_DIR} to ${EXPERIMENT_OUT_DIR}"
-rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}
+rsync --archive --update --compress --progress ${SCRATCH_OUT_DIR}/ ${EXPERIMENT_OUT_DIR}/canonical
 
 echo "________________________________________"
 
