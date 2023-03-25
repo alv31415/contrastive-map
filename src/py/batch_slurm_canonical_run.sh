@@ -54,7 +54,7 @@ echo "Creating directory in scratch disk: ${SCRATCH_DIR}"
 mkdir -p ${SCRATCH_DIR}
 
 SCRATCH_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
-SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/
+SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
 
 SCRATCH_CHECKPOINT_DIR_SIMCLR=${SCRATCH_OUT_DIR}/final_run_2/s-cnn-e25-b64-t0_99-lr0_001-p128
 SCRATCH_CHECKPOINT_DIR_BYOL=${SCRATCH_OUT_DIR}/final_run_2/b-presnet18-e25-b64-t0_80-lr0_001-p128
