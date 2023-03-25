@@ -176,7 +176,7 @@ class CanonicalDataset(Dataset):
             historical_patches.extend([historical_patch_1, historical_patch_2])
             canonical_patches.extend([canonical_patch, canonical_patch])
 
-        return cls(historical_patches, canonical_patches, canonical_patch_dict, canonical_key = "osm")
+        return cls(historical_patches, canonical_patches, canonical_patch_dict, canonical_key="osm")
 
     @classmethod
     def from_os_dataset(cls, patch_dataset, canonical_idx, data_dir=None, canonical_patch_dict=None,
@@ -186,19 +186,35 @@ class CanonicalDataset(Dataset):
 
         historical_patches = []
         canonical_patches = []
+        seen_dict = {}
 
         if canonical_patch_dict is None:
             logging.info(
                 f"Creating dictionary for canonical patches, based on map number {canonical_idx + 1} in {data_dir}.")
-            canonical_patch_dict = CanonicalDataset.get_canonical_patch_dict_from_dataset(patch_datasets=[patch_dataset],
-                                                                                          canonical_idx=canonical_idx,
-                                                                                          data_dir=data_dir)
+            canonical_patch_dict = CanonicalDataset.get_canonical_patch_dict_from_dataset(
+                patch_datasets=[patch_dataset],
+                canonical_idx=canonical_idx,
+                data_dir=data_dir)
 
         iter_range = len(patch_dataset.X_1)
         logging.info(f"Matching historical patches with canonical patches ({iter_range} iterations)")
         for i in range(iter_range):
             historical_patch_1 = patch_dataset.X_1[i]
             historical_patch_2 = patch_dataset.X_2[i]
+
+            keep_patch_1 = False
+            seen_patch_1 = seen_dict.get(historical_patch_1.origin_map, [])
+            if historical_patch_1.patch_index not in seen_patch_1:
+                seen_patch_1.append(historical_patch_1.patch_index)
+                seen_dict[historical_patch_1.origin_map] = seen_patch_1
+                keep_patch_1 = True
+
+            keep_patch_2 = False
+            seen_patch_2 = seen_dict.get(historical_patch_2.origin_map, [])
+            if historical_patch_2.patch_index not in seen_patch_2:
+                seen_patch_2.append(historical_patch_2.patch_index)
+                seen_dict[historical_patch_2.origin_map] = seen_patch_2
+                keep_patch_2 = True
 
             assert historical_patch_1.patch_index == historical_patch_2.patch_index
 
@@ -211,21 +227,25 @@ class CanonicalDataset(Dataset):
                     canonical_patch = canonical_patch_dict[canonical_map_folder][patch_index]
 
                     if remove_copies:
-                        if historical_patch_1.origin_map != canonical_patch.origin_map:
+                        if historical_patch_1.origin_map != canonical_patch.origin_map and keep_patch_1:
                             historical_patches.append(historical_patch_1)
                             canonical_patches.append(canonical_patch)
-                        if historical_patch_2.origin_map != canonical_patch.origin_map:
+                        if historical_patch_2.origin_map != canonical_patch.origin_map and keep_patch_2:
                             historical_patches.append(historical_patch_2)
                             canonical_patches.append(canonical_patch)
                     else:
-                        historical_patches.extend([historical_patch_1, historical_patch_2])
-                        canonical_patches.extend([canonical_patch, canonical_patch])
+                        if keep_patch_1:
+                            historical_patches.append(historical_patch_1)
+                            canonical_patches.append(canonical_patch)
+                        if keep_patch_2:
+                            historical_patches.append(historical_patch_2)
+                            canonical_patches.append(canonical_patch)
                 else:
                     c += 1
 
         print(f"{c} matches not found")
 
-        return cls(historical_patches, canonical_patches, canonical_patch_dict, canonical_key = "os")
+        return cls(historical_patches, canonical_patches, canonical_patch_dict, canonical_key="os")
 
     def save(self, file_name):
         with open(file_name, "wb") as f:

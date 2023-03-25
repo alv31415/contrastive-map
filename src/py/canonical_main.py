@@ -192,7 +192,6 @@ def main(args):
             with open(CANONICAL_TEST_DATASET_DIR, "rb") as f:
                 canonical_test_dataset = pk.load(f)
         else:
-
             canonical_train_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir = PATCH_TRAIN_DATASET_DIR,
                                                                     canonical_maps_dir= args.input)
             canonical_validation_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir=PATCH_VALIDATION_DATASET_DIR,

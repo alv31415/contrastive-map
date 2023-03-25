@@ -171,7 +171,10 @@ class UNet(nn.Module):
         else:
             modules = self.get_encoder_modules()
 
-            x_down = modules[-3].output
+            if len(modules) == 1:
+                x_down = modules[0][-2].output
+            else:
+                x_down = modules[-3].output
 
             #assert x_down.shape[1:] == (512, 7, 7)
 
