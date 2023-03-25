@@ -86,18 +86,49 @@ def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_datase
 
 def main(args):
     # testing: high epochs, simclr & byol, os vs osm
+
+    EPOCHS = 20
+    SAVE_RECONSTRUCTION_INTERVAL = 500
+    TRAIN_PROPORTION = 0.8
+    VALIDATION_PROPORTION = 0.1
+
     experiment_argss = [
+        # simclr, not contrastive output, OSM
         {
             "--batch-size": 64,
             "--patch-size": 128,
-            "--epochs": 30,
+            "--epochs": EPOCHS,
             "--lr": 1e-3,
             "--seed": 23,
             "--log-interval": 50,
-            "--save-reconstruction-interval": 1000,
-            "--train-proportion": 0.98,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": VALIDATION_PROPORTION,
+            "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "b-presnet18-e5-b32-t0_9-p128",
+                                                         "final_run_2"
+                                                         "s-cnn-e25-b64-t0_99-lr0_001-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": False,
+            "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": False,
+            "--remove-copies": False
+        },
+        # byol, not contrastive output, OSM
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": EPOCHS,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": VALIDATION_PROPORTION,
+            "--save-reconstruction-interval": 1000,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "final_run_2"
+                                                         "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
             "--use-contrastive-output": False,
@@ -106,20 +137,129 @@ def main(args):
             "--os": False,
             "--remove-copies": False
         },
+        # simclr, not contrastive output, OS
         {
             "--batch-size": 64,
             "--patch-size": 128,
-            "--epochs": 30,
+            "--epochs": EPOCHS,
             "--lr": 1e-3,
             "--seed": 23,
             "--log-interval": 50,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": 1000,
-            "--train-proportion": 0.98,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "b-presnet18-e5-b32-t0_9-p128",
+                                                         "s-cnn-e25-b64-t0_99-lr0_001-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": False,
+            "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": True,
+            "--remove-copies": True
+        },
+        # simclr, not contrastive output, OS
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": EPOCHS,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": VALIDATION_PROPORTION,
+            "--save-reconstruction-interval": 1000,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
             "--use-contrastive-output": False,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": True,
+            "--remove-copies": True
+        },
+        # simclr, contrastive output, OSM
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": EPOCHS,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": VALIDATION_PROPORTION,
+            "--save-reconstruction-interval": 1000,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "final_run_2"
+                                                         "s-cnn-e25-b64-t0_99-lr0_001-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": False,
+            "--use-contrastive-output": True,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": False,
+            "--remove-copies": False
+        },
+        # byol, contrastive output, OSM
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": EPOCHS,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": VALIDATION_PROPORTION,
+            "--save-reconstruction-interval": 1000,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "final_run_2"
+                                                         "b-presnet18-e25-b64-t0_80-lr0_001-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": True,
+            "--use-contrastive-output": True,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": False,
+            "--remove-copies": False
+        },
+        # simclr, contrastive output, OS
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": EPOCHS,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": VALIDATION_PROPORTION,
+            "--save-reconstruction-interval": 1000,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "s-cnn-e25-b64-t0_99-lr0_001-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": False,
+            "--use-contrastive-output": True,
+            "--loss": "MSE",
+            "--grayscale": False,
+            "--os": True,
+            "--remove-copies": True
+        },
+        # byol, contrastive output, OS
+        {
+            "--batch-size": 64,
+            "--patch-size": 128,
+            "--epochs": EPOCHS,
+            "--lr": 1e-3,
+            "--seed": 23,
+            "--log-interval": 50,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": VALIDATION_PROPORTION,
+            "--save-reconstruction-interval": 1000,
+            "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "b-presnet18-e25-b64-t0_80-lr0_001-p128",
+                                                         "byol_checkpoint.pt"),
+            "--use-byol": True,
+            "--use-contrastive-output": True,
             "--loss": "MSE",
             "--grayscale": False,
             "--os": True,

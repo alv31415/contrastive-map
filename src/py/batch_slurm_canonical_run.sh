@@ -3,7 +3,6 @@
 #SBATCH --output=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/canonical_logs/slurm-%A_%a.out
 #SBATCH --error=/home/%u/honours-project/contrastive-map/src/py/slurm_logs/canonical_logs/slurm-err-%A_%a.out
 #SBATCH --nodes=1
-#SBATCH --nodelist=landonia23
 #SBATCH --gres=gpu:1
 #SBATCH --mem=16GB
 #SBATCH --cpus-per-task=4
@@ -54,13 +53,15 @@ echo "Creating directory in scratch disk: ${SCRATCH_DIR}"
 mkdir -p ${SCRATCH_DIR}
 
 SCRATCH_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
-SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
+SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/
 
-SCRATCH_CHECKPOINT_DIR=${SCRATCH_OUT_DIR}/b-presnet18-e5-b32-t0_9-p128
+SCRATCH_CHECKPOINT_DIR_SIMCLR=${SCRATCH_OUT_DIR}/final_run_2/s-cnn-e25-b64-t0_99-lr0_001-p128
+SCRATCH_CHECKPOINT_DIR_BYOL=${SCRATCH_OUT_DIR}/final_run_2/b-presnet18-e25-b64-t0_80-lr0_001-p128
 
-EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
+EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output/canonical
 
-EXPERIMENT_CHECKPOINT_DIR=${EXPERIMENT_OUT_DIR}/b-presnet18-e5-b32-t0_9-p128
+EXPERIMENT_CHECKPOINT_DIR_SIMCLR=${EXPERIMENT_OUT_DIR}/final_run_2/s-cnn-e25-b64-t0_99-lr0_001-p128
+EXPERIMENT_CHECKPOINT_DIR_BYOL=${EXPERIMENT_OUT_DIR}/final_run_2/b-presnet18-e25-b64-t0_80-lr0_001-p128
 
 SLURM_OUT_DIR=${EXPERIMENT_DIR}/slurm_logs/canonical_logs
 
@@ -77,8 +78,11 @@ echo "________________________________________"
 echo "Transferring files from ${DATA_DIR} to ${SCRATCH_DATA_DIR}"
 rsync --archive --update --compress --progress ${DATA_DIR}/ ${SCRATCH_DATA_DIR}
 
-echo "Transferring checkpoint from ${DATA_DIR} to ${SCRATCH_DATA_DIR}"
-rsync --archive --update --compress --progress ${EXPERIMENT_CHECKPOINT_DIR}/ ${SCRATCH_CHECKPOINT_DIR}
+echo "Transferring SimCLR checkpoint from ${EXPERIMENT_CHECKPOINT_DIR_SIMCLR} to ${SCRATCH_CHECKPOINT_DIR_SIMCLR}"
+rsync --archive --update --compress --progress ${EXPERIMENT_CHECKPOINT_DIR_SIMCLR}/ ${SCRATCH_CHECKPOINT_DIR_SIMCLR}
+
+echo "Transferring BYOL checkpoint from ${EXPERIMENT_CHECKPOINT_DIR_BYOL} to ${SCRATCH_CHECKPOINT_DIR_BYOL}"
+rsync --archive --update --compress --progress ${EXPERIMENT_CHECKPOINT_DIR_BYOL}/ ${SCRATCH_CHECKPOINT_DIR_BYOL}
 
 echo "________________________________________"
 

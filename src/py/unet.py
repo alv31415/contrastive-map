@@ -173,7 +173,7 @@ class UNet(nn.Module):
 
             x_down = modules[-3].output
 
-            assert x_down.shape[1:] == (512, 7, 7)
+            #assert x_down.shape[1:] == (512, 7, 7)
 
             x_down = F.interpolate(x_down,
                                    size=(self.contrastive_img_width, self.contrastive_img_width),
@@ -245,7 +245,7 @@ class UNet(nn.Module):
 
             return None
 
-        cl_model.load_state_dict(state_dict=checkpoint["model_state_dict"])
+        cl_model.load_state_dict(state_dict=checkpoint["best_model_state_dict"])
 
         logging.info("Model loaded and set to evaluation mode")
         cl_model.eval()
