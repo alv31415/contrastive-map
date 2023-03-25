@@ -93,6 +93,10 @@ def main(args):
     PATCH_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"patch_validation_dataset_{args.patch_size}.pk")
     PATCH_TEST_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"patch_test_dataset_{args.patch_size}.pk")
 
+    logging.info(f"File at {PATCH_TRAIN_DATASET_DIR}: {os.path.isfile(PATCH_TRAIN_DATASET_DIR)}")
+    logging.info(f"File at {PATCH_VALIDATION_DATASET_DIR}: {os.path.isfile(PATCH_VALIDATION_DATASET_DIR)}")
+    logging.info(f"File at {PATCH_TEST_DATASET_DIR}: {os.path.isfile(PATCH_TEST_DATASET_DIR)}")
+
     # create the CLPatchDataset object if it doesn't exist
     if not os.path.isfile(PATCH_TRAIN_DATASET_DIR) or not os.path.isfile(PATCH_VALIDATION_DATASET_DIR) or not os.path.isfile(PATCH_TEST_DATASET_DIR):
         patch_dataset = CLPatchDataset.from_dir(map_directory=args.input,
@@ -115,6 +119,10 @@ def main(args):
                                                         f"canonical_os_validation_dataset_{args.patch_size}.pk")
         CANONICAL_TEST_DATASET_DIR = os.path.join(args.patch_dataset_dir,
                                                         f"canonical_os_test_dataset_{args.patch_size}.pk")
+
+        logging.info(f"File at {CANONICAL_TRAIN_DATASET_DIR}: {os.path.isfile(CANONICAL_TRAIN_DATASET_DIR)}")
+        logging.info(f"File at {CANONICAL_VALIDATION_DATASET_DIR}: {os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR)}")
+        logging.info(f"File at {CANONICAL_TEST_DATASET_DIR}: {os.path.isfile(CANONICAL_TEST_DATASET_DIR)}")
 
         # create the CanonicalDataset object (or load it if available)
         if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR) and os.path.isfile(CANONICAL_TEST_DATASET_DIR):
@@ -165,6 +173,10 @@ def main(args):
         CANONICAL_TRAIN_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_train_dataset_{args.patch_size}.pk")
         CANONICAL_VALIDATION_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_validation_dataset_{args.patch_size}.pk")
         CANONICAL_TEST_DATASET_DIR = os.path.join(args.patch_dataset_dir, f"canonical_test_dataset_{args.patch_size}.pk")
+
+        logging.info(f"File at {CANONICAL_TRAIN_DATASET_DIR}: {os.path.isfile(CANONICAL_TRAIN_DATASET_DIR)}")
+        logging.info(f"File at {CANONICAL_VALIDATION_DATASET_DIR}: {os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR)}")
+        logging.info(f"File at {CANONICAL_TEST_DATASET_DIR}: {os.path.isfile(CANONICAL_TEST_DATASET_DIR)}")
 
         # create the CanonicalDataset object (or load it if available)
         if os.path.isfile(CANONICAL_TRAIN_DATASET_DIR) and os.path.isfile(CANONICAL_VALIDATION_DATASET_DIR) and os.path.isfile(CANONICAL_TEST_DATASET_DIR):
