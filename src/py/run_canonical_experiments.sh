@@ -6,7 +6,7 @@ STUDENT_ID=$(whoami)
 EXPERIMENT_DIR=/home/${STUDENT_ID}/honours-project/contrastive-map/src/py
 
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
-SCRATCH_PATCH_DATA_DIR=${SCRATCH_DIR}/data
+SCRATCH_PATCH_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
 SCRATCH_CANONICAL_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
 SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/
 
