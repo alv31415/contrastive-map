@@ -31,7 +31,7 @@ echo "________________________________________"
 HOME_DIR=/home/${STUDENT_ID}/honours-project
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
-DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals/osm_carto
+DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals
 EXPERIMENT_FILE=${EXPERIMENT_DIR}/canonical_experiments.txt
 
 if [ -f "${EXPERIMENT_FILE}" ]; then
