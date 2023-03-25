@@ -8,7 +8,7 @@
 #SBATCH --mem=12GB
 #SBATCH --cpus-per-task=2
 #SBATCH --time=3-08:00:00
-#SBATCH --partition=Teach-Standard
+#SBATCH --partition=PGR-Standard
 #SBATCH --mail-type=begin        # send mail when job begins
 #SBATCH --mail-type=end          # send mail when job ends
 #SBATCH --mail-type=fail         # send mail if job fails

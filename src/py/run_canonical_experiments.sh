@@ -26,7 +26,7 @@ echo "canonical_experiments.txt created succesfully"
 
 
 N_EXPERIMENTS=$(cat ${EXPERIMENT_FILE} | wc -l)
-MAX_PARALLEL_JOBS=8
+MAX_PARALLEL_JOBS=14
 
 echo "${N_EXPERIMENTS} found. Running with maximum ${MAX_PARALLEL_JOBS} parallel jobs."
 
