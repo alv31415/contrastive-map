@@ -15,7 +15,7 @@
 #SBATCH --mail-user=s1908368@ed.ac.uk
 
 START=$(date "+%d/%m/%Y %H:%M:%S")
-echo "Job starting at ${START} on ${SLURM_JOB_NODELIST}"
+echo "Job starting at ${START} on ${SLURMD_NODENAME}"
 STUDENT_ID=$(whoami)
 
 
