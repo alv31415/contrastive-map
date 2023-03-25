@@ -87,7 +87,7 @@ BEST_SIMCLR_DIR=s-cnn-e25-b64-t0_99-lr0_001-p128
 SCRATCH_CHECKPOINT_DIR_SIMCLR=${SCRATCH_OUT_DIR}/${BEST_SIMCLR_DIR}
 SCRATCH_CHECKPOINT_DIR_BYOL=${SCRATCH_OUT_DIR}/${BEST_BYOL_DIR}
 
-EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
+EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output/${EXPERIMENT_NAME}
 
 EXPERIMENT_CHECKPOINT_DIR_SIMCLR=${EXPERIMENT_OUT_DIR}/${BEST_SIMCLR_DIR}
 EXPERIMENT_CHECKPOINT_DIR_BYOL=${EXPERIMENT_OUT_DIR}/${BEST_BYOL_DIR}
@@ -113,11 +113,11 @@ if [[ "$DEBUG" == "true" ]]; then
   echo "Scratch canonical data directory: ${SCRATCH_CANONICAL_DATA_DIR}"
   echo "Scratch output directory: ${SCRATCH_OUT_DIR}"
   echo "Scratch SimCLR checkpoint": ${SCRATCH_CHECKPOINT_DIR_SIMCLR}
-  echo "Scratch BYOL SimCLR checkpoint": ${SCRATCH_CHECKPOINT_DIR_SIMCLR}
+  echo "Scratch BYOL checkpoint": ${SCRATCH_CHECKPOINT_DIR_BYOL}
   echo "Experiment directory: ${EXPERIMENT_DIR}"
   echo "Experiment output directory: ${EXPERIMENT_OUT_DIR}"
   echo "Experiment SimCLR checkpoint": ${EXPERIMENT_CHECKPOINT_DIR_SIMCLR}
-  echo "Experiment BYOL SimCLR checkpoint": ${EXPERIMENT_CHECKPOINT_DIR_BYOL}
+  echo "Experiment BYOL checkpoint": ${EXPERIMENT_CHECKPOINT_DIR_BYOL}
   echo "Data directory: ${DATA_DIR}"
   echo "Experiment file: ${EXPERIMENT_FILE}"
   echo "Experiment name: ${EXPERIMENT_NAME}"
