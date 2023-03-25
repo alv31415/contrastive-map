@@ -8,7 +8,7 @@ EXPERIMENT_DIR=/home/${STUDENT_ID}/honours-project/contrastive-map/src/py
 SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 SCRATCH_PATCH_DATA_DIR=${SCRATCH_DIR}/data
 SCRATCH_CANONICAL_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
-SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
+SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/
 
 MAIN_FILE=${EXPERIMENT_DIR}/canonical_main.py
 SLURM_RUN_FILE=${EXPERIMENT_DIR}/batch_slurm_canonical_run.sh
