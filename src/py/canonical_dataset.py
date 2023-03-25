@@ -76,13 +76,14 @@ class CanonicalDataset(Dataset):
         canonical_patch_dict = {}
 
         for img in os.listdir(canonical_maps_dir):
-            dot_index = img.index(".")
-            folder_number = img[:dot_index]
-            if folder_number.isdigit():
-                canonical_patch_list = MapPatch.get_map_patch_list(file_name=os.path.join(canonical_maps_dir, img),
-                                                                   patch_width=patch_width,
-                                                                   verbose=False)
-                canonical_patch_dict[int(folder_number)] = canonical_patch_list
+            if img.endswith(".png"):
+                dot_index = img.index(".")
+                folder_number = img[:dot_index]
+                if folder_number.isdigit():
+                    canonical_patch_list = MapPatch.get_map_patch_list(file_name=os.path.join(canonical_maps_dir, img),
+                                                                       patch_width=patch_width,
+                                                                       verbose=False)
+                    canonical_patch_dict[int(folder_number)] = canonical_patch_list
 
         return canonical_patch_dict
 
