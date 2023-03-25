@@ -131,6 +131,9 @@ def main(args):
 
             with open(CANONICAL_VALIDATION_DATASET_DIR, "rb") as f:
                 canonical_validation_dataset = pk.load(f)
+
+            with open(CANONICAL_TEST_DATASET_DIR, "rb") as f:
+                canonical_test_dataset = pk.load(f)
         else:
 
             with open(PATCH_TRAIN_DATASET_DIR, "rb") as f:
@@ -185,14 +188,17 @@ def main(args):
 
             with open(CANONICAL_VALIDATION_DATASET_DIR, "rb") as f:
                 canonical_validation_dataset = pk.load(f)
+
+            with open(CANONICAL_TEST_DATASET_DIR, "rb") as f:
+                canonical_test_dataset = pk.load(f)
         else:
 
             canonical_train_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir = PATCH_TRAIN_DATASET_DIR,
-                                                                canonical_maps_dir= args.input)
+                                                                    canonical_maps_dir= args.input)
             canonical_validation_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir=PATCH_VALIDATION_DATASET_DIR,
-                                                                     canonical_maps_dir=args.input)
-            canonical_test_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir=PATCH_TEST_DATASET_DIR,
                                                                          canonical_maps_dir=args.input)
+            canonical_test_dataset = CanonicalDataset.from_osm_dir(patch_dataset_dir=PATCH_TEST_DATASET_DIR,
+                                                                   canonical_maps_dir=args.input)
 
             canonical_train_dataset.save(CANONICAL_TRAIN_DATASET_DIR)
             canonical_validation_dataset.save(CANONICAL_VALIDATION_DATASET_DIR)

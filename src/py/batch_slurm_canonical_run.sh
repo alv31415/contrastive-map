@@ -28,11 +28,27 @@ set -e
 echo "________________________________________"
 
 # define main directories
-HOME_DIR=/home/${STUDENT_ID}/honours-project
-SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
-EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
+if [ -z "${HOME_DIR}" ]; then
+  HOME_DIR=/home/${STUDENT_ID}/honours-project
+fi
+
+if [ -z "${SCRATCH_DIR}" ]; then
+  SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
+fi
+
+if [ -z "${EXPERIMENT_DIR}" ]; then
+  EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
+fi
+
+if [ -z "${EXPERIMENT_FILE}" ]; then
+  EXPERIMENT_FILE=${EXPERIMENT_DIR}/experiments.txt
+fi
+
+if [ -z "${EXPERIMENT_NAME}" ]; then
+  EXPERIMENT_NAME=${SLURM_JOB_ID}
+fi
+
 DATA_DIR=${HOME_DIR}/contrastive-map/src/data/originals
-EXPERIMENT_FILE=${EXPERIMENT_DIR}/canonical_experiments.txt
 
 if [ -f "${EXPERIMENT_FILE}" ]; then
     echo "${EXPERIMENT_FILE} found."
@@ -53,20 +69,33 @@ echo "________________________________________"
 echo "Creating directory in scratch disk: ${SCRATCH_DIR}"
 mkdir -p ${SCRATCH_DIR}
 
-SCRATCH_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
-SCRATCH_OUT_DIR=${SCRATCH_DIR}/output
+if [ -z "${SCRATCH_DATA_DIR}" ]; then
+  SCRATCH_DATA_DIR=${SCRATCH_DIR}/data
+fi
 
-SCRATCH_CHECKPOINT_DIR_SIMCLR=${SCRATCH_OUT_DIR}/final_run_2/s-cnn-e25-b64-t0_99-lr0_001-p128
-SCRATCH_CHECKPOINT_DIR_BYOL=${SCRATCH_OUT_DIR}/final_run_2/b-presnet18-e25-b64-t0_80-lr0_001-p128
+if [ -z "${SCRATCH_CANONICAL_DATA_DIR}" ]; then
+  SCRATCH_CANONICAL_DATA_DIR=${SCRATCH_DIR}/data/osm_carto
+fi
+
+if [ -z "${SCRATCH_OUT_DIR}" ]; then
+  SCRATCH_OUT_DIR=${SCRATCH_DIR}/output/${EXPERIMENT_NAME}
+fi
+
+BEST_BYOL_DIR=b-presnet18-e25-b64-t0_80-lr0_001-p128
+BEST_SIMCLR_DIR=s-cnn-e25-b64-t0_99-lr0_001-p128
+
+SCRATCH_CHECKPOINT_DIR_SIMCLR=${SCRATCH_OUT_DIR}/${BEST_SIMCLR_DIR}
+SCRATCH_CHECKPOINT_DIR_BYOL=${SCRATCH_OUT_DIR}/${BEST_BYOL_DIR}
 
 EXPERIMENT_OUT_DIR=${EXPERIMENT_DIR}/output
 
-EXPERIMENT_CHECKPOINT_DIR_SIMCLR=${EXPERIMENT_OUT_DIR}/final_run_2/s-cnn-e25-b64-t0_99-lr0_001-p128
-EXPERIMENT_CHECKPOINT_DIR_BYOL=${EXPERIMENT_OUT_DIR}/final_run_2/b-presnet18-e25-b64-t0_80-lr0_001-p128
+EXPERIMENT_CHECKPOINT_DIR_SIMCLR=${EXPERIMENT_OUT_DIR}/${BEST_SIMCLR_DIR}
+EXPERIMENT_CHECKPOINT_DIR_BYOL=${EXPERIMENT_OUT_DIR}/${BEST_BYOL_DIR}
 
 SLURM_OUT_DIR=${EXPERIMENT_DIR}/slurm_logs/canonical_logs
 
 mkdir -p ${SCRATCH_DATA_DIR}
+mkdir -p ${SCRATCH_CANONICAL_DATA_DIR}
 mkdir -p ${SCRATCH_OUT_DIR}
 mkdir -p ${EXPERIMENT_OUT_DIR}
 mkdir -p ${SLURM_OUT_DIR}
@@ -75,6 +104,26 @@ mkdir -p ${SCRATCH_CHECKPOINT_DIR_SIMCLR}
 mkdir -p ${SCRATCH_CHECKPOINT_DIR_BYOL}
 
 #rm -rf ${SCRATCH_DATA_DIR}/*.pk ||:
+
+if [[ "$DEBUG" == "true" ]]; then
+  echo "Debugging set to true"
+  echo "Home directory: ${HOME_DIR}"
+  echo "Scratch directory: ${SCRATCH_DIR}"
+  echo "Scratch data directory: ${SCRATCH_DATA_DIR}"
+  echo "Scratch canonical data directory: ${SCRATCH_CANONICAL_DATA_DIR}"
+  echo "Scratch output directory: ${SCRATCH_OUT_DIR}"
+  echo "Scratch SimCLR checkpoint": ${SCRATCH_CHECKPOINT_DIR_SIMCLR}
+  echo "Scratch BYOL SimCLR checkpoint": ${SCRATCH_CHECKPOINT_DIR_SIMCLR}
+  echo "Experiment directory: ${EXPERIMENT_DIR}"
+  echo "Experiment output directory: ${EXPERIMENT_OUT_DIR}"
+  echo "Experiment SimCLR checkpoint": ${EXPERIMENT_CHECKPOINT_DIR_SIMCLR}
+  echo "Experiment BYOL SimCLR checkpoint": ${EXPERIMENT_CHECKPOINT_DIR_BYOL}
+  echo "Data directory: ${DATA_DIR}"
+  echo "Experiment file: ${EXPERIMENT_FILE}"
+  echo "Experiment name: ${EXPERIMENT_NAME}"
+
+  exit
+fi
 
 echo "________________________________________"
 

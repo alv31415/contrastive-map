@@ -45,7 +45,7 @@ def get_experiment_name(epochs, batch_size, patch_size, lr, use_contrastive_outp
     string_lr = str(lr).replace(".", "_").replace(",", "_")
     return f"can{'g' if grayscale else ''}-{'rc-' if remove_copies else ''}{'os-' if os else ''}{'co' if use_contrastive_output else 'nco'}-{loss}-e{epochs}-lr{string_lr}-b{batch_size}-p{patch_size}"
 
-def create_experiment(main_file, scratch_data_dir, scratch_out_dir, patch_dataset_dir, experiment_args):
+def create_experiment(main_file, scratch_data_dir, patch_dataset_dir, experiment_args):
     arg_dict = get_default_arg_dict(scratch_data_dir, patch_dataset_dir)
 
     for arg, value in experiment_args.items():
@@ -108,7 +108,6 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--reconstruction-saves-per-epoch": RECONSTRUCTION_SAVES_PER_EPOCH,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2",
                                                          "s-cnn-e25-b64-t0_99-lr0_001-p128",
                                                          "simclr_checkpoint.pt"),
             "--use-byol": False,
@@ -131,7 +130,6 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--reconstruction-saves-per-epoch": RECONSTRUCTION_SAVES_PER_EPOCH,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2",
                                                          "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
@@ -154,7 +152,6 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--reconstruction-saves-per-epoch": RECONSTRUCTION_SAVES_PER_EPOCH,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2",
                                                          "s-cnn-e25-b64-t0_99-lr0_001-p128",
                                                          "simclr_checkpoint.pt"),
             "--use-byol": False,
@@ -177,7 +174,6 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--reconstruction-saves-per-epoch": RECONSTRUCTION_SAVES_PER_EPOCH,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2",
                                                          "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
@@ -200,7 +196,6 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--reconstruction-saves-per-epoch": RECONSTRUCTION_SAVES_PER_EPOCH,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2",
                                                          "s-cnn-e25-b64-t0_99-lr0_001-p128",
                                                          "simclr_checkpoint.pt"),
             "--use-byol": False,
@@ -223,7 +218,6 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--reconstruction-saves-per-epoch": RECONSTRUCTION_SAVES_PER_EPOCH,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2",
                                                          "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
@@ -246,7 +240,6 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--reconstruction-saves-per-epoch": RECONSTRUCTION_SAVES_PER_EPOCH,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2",
                                                          "s-cnn-e25-b64-t0_99-lr0_001-p128",
                                                          "simclr_checkpoint.pt"),
             "--use-byol": False,
@@ -269,7 +262,6 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--reconstruction-saves-per-epoch": RECONSTRUCTION_SAVES_PER_EPOCH,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2",
                                                          "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
@@ -439,7 +431,6 @@ def main(args):
 
     experiment_run_args = [create_experiment(main_file=args.main,
                                              scratch_data_dir=args.scratch_data_dir,
-                                             scratch_out_dir=args.scratch_out_dir,
                                              patch_dataset_dir=args.patch_dataset_dir,
                                              experiment_args=experiment_args) + "\n"
                            for experiment_args in experiment_argss]
