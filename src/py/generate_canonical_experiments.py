@@ -26,7 +26,8 @@ def get_default_arg_dict(scratch_data_dir, patch_data_dir):
         "--seed": 23,
         "--log-interval": 1000,
         "--save-reconstruction-interval": 250,
-        "--train-proportion": 0.98,
+        "--train-proportion": 0.8,
+        "--validation-proportion": 0.1,
         "--input": scratch_data_dir,
         "--patch-dataset-dir": patch_data_dir,
         "--contrastive-checkpoint-dir": None,
@@ -105,9 +106,9 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2"
+                                                         "final_run_2",
                                                          "s-cnn-e25-b64-t0_99-lr0_001-p128",
-                                                         "byol_checkpoint.pt"),
+                                                         "simclr_checkpoint.pt"),
             "--use-byol": False,
             "--use-contrastive-output": False,
             "--loss": "MSE",
@@ -127,7 +128,7 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2"
+                                                         "final_run_2",
                                                          "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
@@ -149,14 +150,15 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "final_run_2",
                                                          "s-cnn-e25-b64-t0_99-lr0_001-p128",
-                                                         "byol_checkpoint.pt"),
+                                                         "simclr_checkpoint.pt"),
             "--use-byol": False,
             "--use-contrastive-output": False,
             "--loss": "MSE",
             "--grayscale": False,
             "--os": True,
-            "--remove-copies": True
+            "--remove-copies": False
         },
         # simclr, not contrastive output, OS
         {
@@ -170,6 +172,7 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "final_run_2",
                                                          "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
@@ -177,7 +180,7 @@ def main(args):
             "--loss": "MSE",
             "--grayscale": False,
             "--os": True,
-            "--remove-copies": True
+            "--remove-copies": False
         },
         # simclr, contrastive output, OSM
         {
@@ -191,9 +194,9 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2"
+                                                         "final_run_2",
                                                          "s-cnn-e25-b64-t0_99-lr0_001-p128",
-                                                         "byol_checkpoint.pt"),
+                                                         "simclr_checkpoint.pt"),
             "--use-byol": False,
             "--use-contrastive-output": True,
             "--loss": "MSE",
@@ -213,7 +216,7 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
-                                                         "final_run_2"
+                                                         "final_run_2",
                                                          "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
@@ -235,14 +238,15 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "final_run_2",
                                                          "s-cnn-e25-b64-t0_99-lr0_001-p128",
-                                                         "byol_checkpoint.pt"),
+                                                         "simclr_checkpoint.pt"),
             "--use-byol": False,
             "--use-contrastive-output": True,
             "--loss": "MSE",
             "--grayscale": False,
             "--os": True,
-            "--remove-copies": True
+            "--remove-copies": False
         },
         # byol, contrastive output, OS
         {
@@ -256,6 +260,7 @@ def main(args):
             "--validation-proportion": VALIDATION_PROPORTION,
             "--save-reconstruction-interval": SAVE_RECONSTRUCTION_INTERVAL,
             "--contrastive-checkpoint-dir": os.path.join(args.scratch_out_dir,
+                                                         "final_run_2",
                                                          "b-presnet18-e25-b64-t0_80-lr0_001-p128",
                                                          "byol_checkpoint.pt"),
             "--use-byol": True,
@@ -263,7 +268,7 @@ def main(args):
             "--loss": "MSE",
             "--grayscale": False,
             "--os": True,
-            "--remove-copies": True
+            "--remove-copies": False
         }
     ]
     """
