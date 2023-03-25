@@ -24,7 +24,6 @@ def get_default_arg_dict(scratch_data_dir, patch_data_dir):
         "--epochs": 1,
         "--lr" : 1e-3,
         "--seed": 23,
-        "--log-interval": 1000,
         "--logs-per-epoch": 50,
         "--evaluations-per-epoch": 150,
         "--reconstruction-saves-per-epoch": 4,
