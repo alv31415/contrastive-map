@@ -48,12 +48,10 @@ class SimGeoProjector(nn.Module):
         return self.sim_projector(x[:, half_dim:])
 
     def forward(self, x):
-        half_dim = x.shape[1] // 2
         sim_projection = self.sim_project(x)
         geo_projection = self.geo_project(x)
 
-        return torch.cat([sim_projection, geo_projection], dim=1)
-
+        return torch.stack([sim_projection, geo_projection], dim=0)
 
 
 class GeoMapSIMCLR(nn.Module):
@@ -90,16 +88,19 @@ class GeoMapSIMCLR(nn.Module):
         self.tau = tau
 
         if not 0 <= sim_weight <= 1:
-            logging.info(f"Invalid similarity weight {sim_weight} (must be between 0 and 1). Setting to sim_weight = 1.")
+            logging.info(
+                f"Invalid similarity weight {sim_weight} (must be between 0 and 1). Setting to sim_weight = 1.")
             self.sim_weight = 1
         else:
             self.sim_weight = sim_weight
 
         self.use_resnet = encoder_parameters["use_resnet"]
 
-        self.half_projector_parameters = {param_name : param_value // 2
+        self.half_projector_parameters = {param_name: param_value // 2
                                           for param_name, param_value
-                                          in projector_parameters.items()}
+                                          in projector_parameters.items()
+                                          if isinstance(param_value, int)
+                                          or isinstance(param_value, float)}
 
         self.projector = SimGeoProjector(**self.half_projector_parameters)
 
@@ -123,7 +124,11 @@ class GeoMapSIMCLR(nn.Module):
                            "loss": 0,
                            "avg_batch_losses_20": [],
                            "batch_losses": [],
-                           "validation_losses ": [],
+                           "sim_losses": [],
+                           "geo_losses": [],
+                           "validation_losses": [],
+                           "validation_sim_losses": [],
+                           "validation_geo_losses": [],
                            "run_start": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                            "run_end": None,
                            "model_kwargs": self.kwargs}
@@ -242,7 +247,9 @@ class GeoMapSIMCLR(nn.Module):
 
         geo_weight = 1 - self.sim_weight
 
-        return sim_loss * self.sim_weight + geo_loss * geo_weight
+        loss = sim_loss * self.sim_weight + geo_loss * geo_weight
+
+        return loss, (sim_loss.detach().cpu() * self.sim_weight), (geo_loss.detach().cpu() * geo_weight)
 
     @torch.no_grad()
     def update_checkpoint(self, checkpoint_dir, batch_losses, validation_losses, **checkpoint_data):
@@ -277,6 +284,8 @@ class GeoMapSIMCLR(nn.Module):
         Computes the average validation loss of the model.
         """
         val_losses = []
+        sim_losses = []
+        geo_losses = []
 
         self.eval()
 
@@ -290,13 +299,15 @@ class GeoMapSIMCLR(nn.Module):
             x_1, x_2, x_3 = transform_inputs(x_1.to(self.device)), \
                             transform_inputs(x_2.to(self.device)), \
                             transform_inputs(x_3.to(self.device))
-            loss = self.get_geo_loss(x_1, x_2, x_3)
+            loss, sim_loss, geo_loss = self.get_loss(x_1, x_2, x_3)
 
             val_losses.append(loss.cpu())
+            sim_losses.append(sim_loss.cpu())
+            geo_losses.append(geo_loss.cpu())
 
         self.train()
 
-        return np.mean(val_losses)
+        return np.mean(val_losses), np.mean(sim_losses), np.mean(geo_losses)
 
     def train_model(self,
                     train_loader,
@@ -326,9 +337,15 @@ class GeoMapSIMCLR(nn.Module):
         if 0 <= patience_prop <= 1:
             patience = int(patience_prop * evaluations_per_epoch)
         else:
-            patience = abs(patience_prop)
+            patience = float("inf")
 
         logging.info(f"Early stopping patience set to {patience}")
+
+        sim_losses = []
+        geo_losses = []
+
+        validation_sim_losses = []
+        validation_geo_losses = []
 
         for epoch in range(epochs):
             batch_losses = []
@@ -347,9 +364,12 @@ class GeoMapSIMCLR(nn.Module):
                 x_1, x_2, x_3 = transform_inputs(x_1.to(self.device)), \
                                 transform_inputs(x_2.to(self.device)), \
                                 transform_inputs(x_3.to(self.device))
-                loss = self.get_loss(x_1, x_2, x_3)
 
-                batch_losses.append(loss.cpu().detach())
+                loss, sim_loss, geo_loss = self.get_loss(x_1, x_2, x_3)
+
+                batch_losses.append(loss.detach().cpu())
+                sim_losses.append(sim_loss)
+                geo_losses.append(geo_loss)
 
                 loss.backward()
                 self.optimiser.step()
@@ -357,28 +377,37 @@ class GeoMapSIMCLR(nn.Module):
                 if batch % (len(train_loader) // logs_per_epoch) == 0 and batch != 0:
                     with torch.no_grad():
                         avg_loss = np.mean(batch_losses[-20:])
+                        avg_sim_loss = np.mean(sim_losses[-20:])
+                        avg_geo_loss = np.mean(geo_losses[-20:])
                         avg_batch_losses_20.append(avg_loss)
                         logging.info(
-                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Training Loss = {avg_loss}")
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- Geo-NT-XENT Training Loss = {avg_loss} ({avg_sim_loss} + {avg_geo_loss})")
 
                 if batch % (len(train_loader) // evaluations_per_epoch) == 0:
-                    validation_loss = self.get_validation_loss(validation_loader)
+                    validation_loss, validation_sim_loss, validation_geo_loss = self.get_validation_loss(
+                        validation_loader)
                     validation_losses.append(validation_loss)
+                    validation_sim_losses.append(validation_sim_loss)
+                    validation_geo_losses.append(validation_geo_loss)
 
                     if validation_loss < best_validation_loss:
                         best_validation_loss = validation_loss
                         best_model_state_dict = self.state_dict()
                         logging.info(
-                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- New Best NT-XENT Validation Loss = {validation_loss}")
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- New Best Geo-NT-XENT Validation Loss = {validation_loss} ({validation_sim_loss} + {validation_geo_loss})")
                         n_runs_no_improvement = 0
                     else:
                         logging.info(
-                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- NT-XENT Validation Loss = {validation_loss}")
+                            f"Epoch {epoch + 1}: [{batch + 1}/{len(train_loader)}] ---- Geo-NT-XENT Validation Loss = {validation_loss} ({validation_sim_loss} + {validation_geo_loss})")
                         n_runs_no_improvement += 1
 
                     self.update_checkpoint(checkpoint_dir=checkpoint_dir,
                                            batch_losses=batch_losses,
+                                           sim_losses=sim_losses,
+                                           geo_losses=geo_losses,
                                            validation_losses=validation_losses,
+                                           validation_sim_losses=validation_sim_losses,
+                                           validation_geo_losses=validation_geo_losses,
                                            epoch=epoch,
                                            batch=batch,
                                            model_state_dict=self.state_dict(),
@@ -389,7 +418,7 @@ class GeoMapSIMCLR(nn.Module):
                                            run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
                     if (n_runs_no_improvement >= patience and epoch > 4) \
-                            or n_runs_no_improvement >= evaluations_per_epoch:
+                            or (n_runs_no_improvement >= evaluations_per_epoch and patience < float("inf")):
                         logging.info(f"Stopping training, at epoch={epoch + 1}, batch={batch + 1} "
                                      f"after no validation improvement in {patience} consecutive evaluations "
                                      f"after 5 epochs, or no improvement during a whole epoch.\n"
@@ -400,7 +429,11 @@ class GeoMapSIMCLR(nn.Module):
             with torch.no_grad():
                 self.update_checkpoint(checkpoint_dir=checkpoint_dir,
                                        batch_losses=batch_losses,
+                                       sim_losses=sim_losses,
+                                       geo_losses=geo_losses,
                                        validation_losses=validation_losses,
+                                       validation_sim_losses=validation_sim_losses,
+                                       validation_geo_losses=validation_geo_losses,
                                        epoch=epoch,
                                        batch=batch,
                                        model_state_dict=self.state_dict(),

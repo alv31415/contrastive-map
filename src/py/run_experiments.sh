@@ -6,7 +6,7 @@ export DEBUG=false
 STUDENT_ID=$(whoami)
 export HOME_DIR=/home/${STUDENT_ID}/honours-project
 export EXPERIMENT_DIR=${HOME_DIR}/contrastive-map/src/py
-export EXPERIMENT_NAME=final_run_2
+export EXPERIMENT_NAME=geo_contrastive_run
 
 export SCRATCH_DIR=/disk/scratch_big/${STUDENT_ID}
 export SCRATCH_DATA_DIR=${SCRATCH_DIR}/data

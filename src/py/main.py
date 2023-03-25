@@ -30,6 +30,7 @@ from simclr import MapSIMCLR
 from geo_simclr import GeoMapSIMCLR
 from cnn import CNN
 
+
 # --------------------------------------------------- PARSER ---------------------------------------------------
 
 def get_parser():
@@ -59,9 +60,9 @@ def get_parser():
 
     # I/O params
     parser.add_argument("--input", required=True, help="Path to the "
-                                                             "input data for the model to read")
+                                                       "input data for the model to read")
     parser.add_argument("--output", required=True, help="Path to the "
-                                                              "directory to write output to")
+                                                        "directory to write output to")
     parser.add_argument("--experiment-name", required=True, help="name of experiment, to store logs and outputs")
 
     # model choices
@@ -88,17 +89,21 @@ def get_parser():
 
     return parser
 
+
 # --------------------------------------------------- MAIN ---------------------------------------------------
 
 def main(args):
-
     torch.manual_seed(args.seed)
 
     logging.info(f"Using geographical contrastive objective: {args.use_geo_contrastive}")
 
-    train_dataset_name = "geo_" if args.use_geo_contrastive else "" + f"patch_train_dataset_{args.patch_size}.pk"
-    validation_dataset_name = "geo_" if args.use_geo_contrastive else "" + f"patch_validation_dataset_{args.patch_size}.pk"
-    test_dataset_name = "geo_" if args.use_geo_contrastive else "" + f"patch_test_dataset_{args.patch_size}.pk"
+    patch_train_dataset_name = f"patch_train_dataset_{args.patch_size}.pk"
+    patch_validation_dataset_name = f"patch_validation_dataset_{args.patch_size}.pk"
+    patch_test_dataset_name = f"patch_test_dataset_{args.patch_size}.pk"
+
+    train_dataset_name = f"geo_{patch_train_dataset_name}" if args.use_geo_contrastive else patch_train_dataset_name
+    validation_dataset_name = f"geo_{patch_validation_dataset_name}" if args.use_geo_contrastive else patch_validation_dataset_name
+    test_dataset_name = f"geo_{patch_test_dataset_name}" if args.use_geo_contrastive else patch_test_dataset_name
 
     TRAIN_DATASET_DIR = os.path.join(args.input, train_dataset_name)
     VALIDATION_DATASET_DIR = os.path.join(args.input, validation_dataset_name)
@@ -109,7 +114,8 @@ def main(args):
     logging.info(f"File at {TEST_DATASET_DIR}: {os.path.isfile(TEST_DATASET_DIR)}")
 
     # create the DataSet object (or load it if available)
-    if os.path.isfile(TRAIN_DATASET_DIR) and os.path.isfile(VALIDATION_DATASET_DIR) and os.path.isfile(TEST_DATASET_DIR):
+    if os.path.isfile(TRAIN_DATASET_DIR) and os.path.isfile(VALIDATION_DATASET_DIR) and os.path.isfile(
+            TEST_DATASET_DIR):
         with open(TRAIN_DATASET_DIR, "rb") as f:
             train_dataset = pk.load(f)
 
@@ -119,13 +125,28 @@ def main(args):
         with open(TEST_DATASET_DIR, "rb") as f:
             test_dataset = pk.load(f)
     else:
-        patch_dataset = CLPatchDataset.from_dir(map_directory = args.input,
-                                                   patch_width = args.patch_size,
-                                                   verbose=True)
 
-        train_dataset, validation_dataset, test_dataset = patch_dataset.unique_split(p_train = args.train_proportion,
-                                                                                        p_validation = args.validation_proportion,
-                                                                                        seed = args.seed)
+        if args.use_geo_contrastive \
+                and os.path.isfile(os.path.join(args.input, patch_train_dataset_name)) \
+                and os.path.isfile(os.path.join(args.input, patch_validation_dataset_name)) \
+                and os.path.isfile(os.path.join(args.input, patch_test_dataset_name)):
+
+            with open(os.path.join(args.input, patch_train_dataset_name), "rb") as f:
+                train_dataset = pk.load(f)
+
+            with open(os.path.join(args.input, patch_validation_dataset_name), "rb") as f:
+                validation_dataset = pk.load(f)
+
+            with open(os.path.join(args.input, patch_test_dataset_name), "rb") as f:
+                test_dataset = pk.load(f)
+        else:
+            patch_dataset = CLPatchDataset.from_dir(map_directory=args.input,
+                                                    patch_width=args.patch_size,
+                                                    verbose=True)
+
+            train_dataset, validation_dataset, test_dataset = patch_dataset.unique_split(p_train=args.train_proportion,
+                                                                                         p_validation=args.validation_proportion,
+                                                                                         seed=args.seed)
 
         if args.use_geo_contrastive:
             geographical_patch_dict, max_index = GeoPatchDataset.get_geographical_patch_dict([train_dataset,
@@ -134,17 +155,17 @@ def main(args):
 
             train_dataset = GeoPatchDataset.from_dataset(patch_dataset=train_dataset,
                                                          shift=1,
-                                                         n_contexts=2,
+                                                         n_contexts=1,
                                                          geographical_patch_dict=geographical_patch_dict,
                                                          max_index=max_index)
             validation_dataset = GeoPatchDataset.from_dataset(patch_dataset=validation_dataset,
                                                               shift=1,
-                                                              n_contexts=2,
+                                                              n_contexts=1,
                                                               geographical_patch_dict=geographical_patch_dict,
                                                               max_index=max_index)
             test_dataset = GeoPatchDataset.from_dataset(patch_dataset=test_dataset,
                                                         shift=1,
-                                                        n_contexts=2,
+                                                        n_contexts=1,
                                                         geographical_patch_dict=geographical_patch_dict,
                                                         max_index=max_index)
 
@@ -161,16 +182,16 @@ def main(args):
     num_workers = 2
 
     train_loader = DataLoader(train_dataset,
-                              batch_size = args.batch_size,
-                              shuffle = True,
-                              num_workers = num_workers)
+                              batch_size=args.batch_size,
+                              shuffle=True,
+                              num_workers=num_workers)
     validation_loader = DataLoader(validation_dataset,
-                                   batch_size = args.batch_size,
-                                   shuffle = False,
-                                   num_workers = num_workers)
+                                   batch_size=args.batch_size,
+                                   shuffle=False,
+                                   num_workers=num_workers)
 
-    encoder_parameters = {"encoder_layer_idx" : args.encoder_layer_idx,
-                          "use_resnet" : args.encoder != "cnn"}
+    encoder_parameters = {"encoder_layer_idx": args.encoder_layer_idx,
+                          "use_resnet": args.encoder != "cnn"}
 
     if args.encoder == "cnn":
         projector_parameters = {"input_dim": 512,
@@ -179,12 +200,12 @@ def main(args):
                                 "activation": nn.ReLU(),
                                 "use_bias": True,
                                 "use_batch_norm": True}
-        encoder = CNN(input_dim = args.patch_size,
-                      in_channels = 3,
-                      output_dim = 512,
-                      use_bias = True,
-                      use_batch_norm = True,
-                      use_flatten = False)
+        encoder = CNN(input_dim=args.patch_size,
+                      in_channels=3,
+                      output_dim=512,
+                      use_bias=True,
+                      use_batch_norm=True,
+                      use_flatten=False)
     elif args.encoder == "resnet34":
         projector_parameters = {"input_dim": 512,
                                 "hidden_dim": 2048,
@@ -194,7 +215,7 @@ def main(args):
                                 "use_batch_norm": True}
 
         if args.pretrain_encoder:
-            encoder = resnet34(weights = ResNet34_Weights.DEFAULT)
+            encoder = resnet34(weights=ResNet34_Weights.DEFAULT)
         else:
             encoder = resnet34()
     elif args.encoder == "resnet50":
@@ -206,19 +227,19 @@ def main(args):
                                 "use_batch_norm": True}
 
         if args.pretrain_encoder:
-            encoder = resnet50(weights = ResNet50_Weights.DEFAULT)
+            encoder = resnet50(weights=ResNet50_Weights.DEFAULT)
         else:
             encoder = resnet50()
     else:
         projector_parameters = {"input_dim": 512,
-                               "hidden_dim": 2048,
-                               "output_dim": 256,
-                               "activation": nn.ReLU(),
-                               "use_bias": True,
-                               "use_batch_norm": True}
+                                "hidden_dim": 2048,
+                                "output_dim": 256,
+                                "activation": nn.ReLU(),
+                                "use_bias": True,
+                                "use_batch_norm": True}
 
         if args.pretrain_encoder:
-            encoder = resnet18(weights = ResNet18_Weights.DEFAULT)
+            encoder = resnet18(weights=ResNet18_Weights.DEFAULT)
         else:
             encoder = resnet18()
 
@@ -233,31 +254,33 @@ def main(args):
                             "use_batch_norm": True}
 
     if args.use_byol:
-        model = MapBYOL(encoder = encoder,
-                        encoder_parameters = encoder_parameters,
-                        projector_parameters = projector_parameters,
-                        predictor_parameters = predictor_parameters,
-                        ema_tau = args.byol_ema_tau,)
+        model = MapBYOL(encoder=encoder,
+                        encoder_parameters=encoder_parameters,
+                        projector_parameters=projector_parameters,
+                        predictor_parameters=predictor_parameters,
+                        ema_tau=args.byol_ema_tau, )
 
         logging.info(f"Using BYOL with tau = {args.byol_ema_tau}, with encoder layer index = {args.encoder_layer_idx}")
     else:
-        model = MapSIMCLR(encoder = encoder,
-                          encoder_parameters = encoder_parameters,
-                          projector_parameters = projector_parameters,
-                          tau = args.simclr_tau)
 
-        logging.info(f"Using SimCLR with tau = {args.simclr_tau}, with encoder layer index = {args.encoder_layer_idx}")
+        if args.use_geo_contrastive:
+            model = GeoMapSIMCLR(encoder=encoder,
+                                 encoder_parameters=encoder_parameters,
+                                 projector_parameters=projector_parameters,
+                                 tau=args.simclr_tau,
+                                 sim_weight=0.7)
 
-    if args.use_geo_contrastive:
-        model = GeoMapSIMCLR(encoder=encoder,
-                             encoder_parameters=encoder_parameters,
-                             projector_parameters=projector_parameters,
-                             tau=args.simclr_tau,
-                             sim_weight=0.7)
+            logging.info(
+                f"Using GeoSimCLR with tau = {args.simclr_tau}, with encoder layer index = {args.encoder_layer_idx}")
+        else:
+            model = MapSIMCLR(encoder=encoder,
+                              encoder_parameters=encoder_parameters,
+                              projector_parameters=projector_parameters,
+                              tau=args.simclr_tau)
 
-        logging.info(f"Using GeoSimCLR with tau = {args.simclr_tau}, with encoder layer index = {args.encoder_layer_idx}")
+            logging.info(f"Using SimCLR with tau = {args.simclr_tau}, with encoder layer index = {args.encoder_layer_idx}")
 
-    model.compile_optimiser(lr = args.lr)
+    model.compile_optimiser(lr=args.lr)
 
     logging.info(f"Using device: {model.device}")
 
@@ -268,9 +291,9 @@ def main(args):
                       validation_loader=validation_loader,
                       epochs=args.epochs,
                       checkpoint_dir=os.path.join(args.output, args.experiment_name),
-                      logs_per_epoch = args.logs_per_epoch,
-                      evaluations_per_epoch = args.evaluations_per_epoch,
-                      patience_prop = args.patience_prop
+                      logs_per_epoch=args.logs_per_epoch,
+                      evaluations_per_epoch=args.evaluations_per_epoch,
+                      patience_prop=args.patience_prop
                       )
 
 # --------------------------------------------------- RUN ---------------------------------------------------
@@ -283,4 +306,3 @@ if __name__ == "__main__":
         main(args)
     else:
         print(args)
-

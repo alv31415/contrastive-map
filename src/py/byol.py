@@ -297,7 +297,7 @@ class MapBYOL(nn.Module):
         if 0 <= patience_prop <= 1:
             patience = int(patience_prop * evaluations_per_epoch)
         else:
-            patience = abs(patience_prop)
+            patience = float("inf")
 
         logging.info(f"Early stopping patience set to {patience}")
 
@@ -317,7 +317,7 @@ class MapBYOL(nn.Module):
 
                 loss = self.get_loss(x_1, x_2)
 
-                batch_losses.append(loss.cpu().detach())
+                batch_losses.append(loss.detach().cpu())
 
                 loss.backward()
                 self.optimiser.step()
@@ -351,12 +351,12 @@ class MapBYOL(nn.Module):
                                            model_state_dict=self.state_dict(),
                                            best_model_state_dict=best_model_state_dict,
                                            optimiser_state_dict=self.optimiser.state_dict,
-                                           loss=loss.cpu().detach(),
+                                           loss=loss.detach().cpu(),
                                            avg_batch_losses_20=avg_batch_losses_20,
                                            run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
                     if (n_runs_no_improvement >= patience and epoch > 4) \
-                            or n_runs_no_improvement >= evaluations_per_epoch:
+                            or (n_runs_no_improvement >= evaluations_per_epoch and patience < float("inf")):
                         logging.info(f"Stopping training, at epoch={epoch + 1}, batch={batch + 1} "
                                      f"after no validation improvement in {patience} consecutive evaluations "
                                      f"after 5 epochs, or no improvement during a whole epoch.\n"
@@ -373,7 +373,7 @@ class MapBYOL(nn.Module):
                                        model_state_dict=self.state_dict(),
                                        best_model_state_dict=best_model_state_dict,
                                        optimiser_state_dict=self.optimiser.state_dict,
-                                       loss=loss.cpu().detach(),
+                                       loss=loss.detach().cpu(),
                                        avg_batch_losses_20=avg_batch_losses_20,
                                        run_end=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 

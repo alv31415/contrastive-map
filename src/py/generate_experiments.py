@@ -107,6 +107,7 @@ def main(args):
     LR = 1e-3
     PATIENCE_PROP = 0.4
 
+    """
     experiment_argss = [
         # 1) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.99
         {
@@ -468,7 +469,7 @@ def main(args):
                 "--simclr-tau": 0.99,
                 "--patience-prop": PATIENCE_PROP
             },
-            # 19) simclr, resnet18, e = 25, batch size = 64, temperature = 0.99, lr = 1e-2
+            # 19) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature = 0.99, lr = 1e-2
             {
                 "--batch-size": BATCH_SIZE,
                 "--patch-size": 128,
@@ -488,7 +489,7 @@ def main(args):
                 "--simclr-tau": 0.99,
                 "--patience-prop": PATIENCE_PROP
             },
-            # 20) byol, resnet18, e = 25, batch size = 64, ema tau = 0.99, lr = 1e-2
+            # 20) byol, pre-trained resnet18, e = 25, batch size = 64, ema tau = 0.99, lr = 1e-2
             {
                 "--batch-size": BATCH_SIZE,
                 "--patch-size": 128,
@@ -509,47 +510,70 @@ def main(args):
                 "--patience-prop": PATIENCE_PROP
             }]
     """
-    # 19) simclr, resnet18, e = 25, batch size = 64, temperature = 0.99, geo-contrastive objective
-    {
-        "--batch-size": BATCH_SIZE,
-        "--patch-size": 128,
-        "--epochs": EPOCHS,
-        "--seed": SEED,
-        "--lr": 1e-3,
-        "--logs-per-epoch": LOGS_PER_EPOCH,
-        "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
-        "--train-proportion": TRAIN_PROPORTION,
-        "--validation-proportion": EVALUATION_PROPORTION,
-        "--use-byol": False,
-        "--use-geo-contrastive": True,
-        "--encoder": "resnet18",
-        "--pretrain-encoder": True,
-        "--encoder-layer-idx": ENCODER_LAYER_IDX,
-        "--byol-ema-tau": 0.99,
-        "--simclr-tau": 0.99,
-        "--patience-prop": PATIENCE_PROP
-    },
-    # 20) byol, resnet18, e = 25, batch size = 64, ema tau = 0.99, geo-contrastive objective
-    {
-        "--batch-size": BATCH_SIZE,
-        "--patch-size": 128,
-        "--epochs": EPOCHS,
-        "--seed": SEED,
-        "--lr": 1e-3,
-        "--logs-per-epoch": LOGS_PER_EPOCH,
-        "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
-        "--train-proportion": TRAIN_PROPORTION,
-        "--validation-proportion": EVALUATION_PROPORTION,
-        "--use-byol": True,
-        "--use-geo-contrastive": True,
-        "--encoder": "resnet18",
-        "--pretrain-encoder": True,
-        "--encoder-layer-idx": ENCODER_LAYER_IDX,
-        "--byol-ema-tau": 0.99,
-        "--simclr-tau": 0.99,
-        "--patience-prop": PATIENCE_PROP
-    }
-    """
+
+    # 1) simclr, cnn, e = 25, batch size = 64, temperature = 0.99, geo-contrastive objective
+    experiment_argss = [
+        {
+            "--batch-size": BATCH_SIZE,
+            "--patch-size": PATCH_SIZE,
+            "--epochs": EPOCHS,
+            "--seed": SEED,
+            "--lr": LR,
+            "--logs-per-epoch": LOGS_PER_EPOCH,
+            "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": EVALUATION_PROPORTION,
+            "--use-byol": False,
+            "--use-geo-contrastive": True,
+            "--encoder": "cnn",
+            "--pretrain-encoder": False,
+            "--encoder-layer-idx": -1,
+            "--byol-ema-tau": 0.99,
+            "--simclr-tau": 0.99,
+            "--patience-prop": -1
+        },
+    # 2) simclr, not pre-trained resnet18, e = 25, batch size = 64, temperature= 0.99
+                     {
+                         "--batch-size": BATCH_SIZE,
+                         "--patch-size": PATCH_SIZE,
+                         "--epochs": 15,
+                         "--seed": SEED,
+                         "--lr": LR,
+                         "--logs-per-epoch": LOGS_PER_EPOCH,
+                         "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
+                         "--train-proportion": TRAIN_PROPORTION,
+                         "--validation-proportion": EVALUATION_PROPORTION,
+                         "--use-byol": False,
+                         "--use-geo-contrastive": USE_GEO_CONTRASTIVE,
+                         "--encoder": "resnet18",
+                         "--pretrain-encoder": False,
+                         "--encoder-layer-idx": ENCODER_LAYER_IDX,
+                         "--byol-ema-tau": 0.99,
+                         "--simclr-tau": 0.99,
+                         "--patience-prop": -1
+                     },
+        # 3) simclr, pre-trained resnet18, e = 25, batch size = 64, temperature= 0.80
+        {
+            "--batch-size": BATCH_SIZE,
+            "--patch-size": PATCH_SIZE,
+            "--epochs": 15,
+            "--seed": SEED,
+            "--lr": LR,
+            "--logs-per-epoch": LOGS_PER_EPOCH,
+            "--evaluations-per-epoch": EVALUATIONS_PER_EPOCH,
+            "--train-proportion": TRAIN_PROPORTION,
+            "--validation-proportion": EVALUATION_PROPORTION,
+            "--use-byol": False,
+            "--use-geo-contrastive": USE_GEO_CONTRASTIVE,
+            "--encoder": "resnet18",
+            "--pretrain-encoder": True,
+            "--encoder-layer-idx": ENCODER_LAYER_IDX,
+            "--byol-ema-tau": 0.99,
+            "--simclr-tau": 0.80,
+            "--patience-prop": -1
+        }
+    ]
+
 
     experiment_run_args = [create_experiment(main_file=args.main,
                                              scratch_data_dir=args.scratch_data_dir,
