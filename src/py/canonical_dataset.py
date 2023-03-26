@@ -160,11 +160,27 @@ class CanonicalDataset(Dataset):
         iter_range = len(patch_dataset.X_1)
 
         logging.info(f"Matching historical patches with canonical patches ({iter_range} iterations)")
+
+        seen_dict = {}
         for i in range(iter_range):
             historical_patch_1 = patch_dataset.X_1[i]
             historical_patch_2 = patch_dataset.X_2[i]
 
             patch_index = historical_patch_1.patch_index
+
+            keep_patch_1 = False
+            seen_patch_1 = seen_dict.get(historical_patch_1.origin_map, [])
+            if historical_patch_1.patch_index not in seen_patch_1:
+                seen_patch_1.append(historical_patch_1.patch_index)
+                seen_dict[historical_patch_1.origin_map] = seen_patch_1
+                keep_patch_1 = True
+
+            keep_patch_2 = False
+            seen_patch_2 = seen_dict.get(historical_patch_2.origin_map, [])
+            if historical_patch_2.patch_index not in seen_patch_2:
+                seen_patch_2.append(historical_patch_2.patch_index)
+                seen_dict[historical_patch_2.origin_map] = seen_patch_2
+                keep_patch_2 = True
 
             canonical_map_name = CanonicalDataset.get_folder(historical_patch_1)
             canonical_map_patches = canonical_patch_dict[canonical_map_name]
@@ -173,8 +189,12 @@ class CanonicalDataset(Dataset):
 
             assert canonical_patch.patch_index == patch_index
 
-            historical_patches.extend([historical_patch_1, historical_patch_2])
-            canonical_patches.extend([canonical_patch, canonical_patch])
+            if keep_patch_1:
+                historical_patches.append(historical_patch_1)
+                canonical_patches.append(canonical_patch)
+            if keep_patch_2:
+                historical_patches.append(historical_patch_2)
+                canonical_patches.append(canonical_patch)
 
         return cls(historical_patches, canonical_patches, canonical_patch_dict, canonical_key="osm")
 
