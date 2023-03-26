@@ -21,7 +21,7 @@ logging.info(f"Running main & importing modules...")
 
 import torch
 import torch.optim as optim
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 
 from patch_dataset import CLPatchDataset
 from unet import UNet
@@ -211,11 +211,11 @@ def main(args):
     canonical_train_loader = DataLoader(canonical_train_dataset,
                                         batch_size = args.batch_size,
                                         shuffle = True,
-                                        num_workers = 4)
+                                        num_workers = 2)
     canonical_validation_loader = DataLoader(canonical_validation_dataset,
                                              batch_size=args.batch_size,
                                              shuffle = False,
-                                             num_workers=4)
+                                             num_workers=2)
 
     unet = UNet.from_checkpoint(checkpoint_dir = args.contrastive_checkpoint_dir,
                                 model = MapBYOL if args.use_byol else MapSIMCLR,
