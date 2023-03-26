@@ -194,6 +194,8 @@ class UNet(nn.Module):
         else:
             raise ValueError(f"Provided model is of type {type(self.contrastive_model)}, but expected one of MapSIMCLR or MapBYOL")
 
+        if len(modules) == 1:
+            return modules[0]
         return modules
 
     def set_contrastive_model(self):
