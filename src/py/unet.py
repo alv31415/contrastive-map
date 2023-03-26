@@ -69,7 +69,7 @@ class Upsampler(nn.Module):
 
 
 class UNet(nn.Module):
-    def __init__(self, contrastive_model=None, use_contrastive_output=True, grayscale_output=False):
+    def __init__(self, contrastive_model=None, use_contrastive_output=True, grayscale_output=False, use_resnet=True):
         super(UNet, self).__init__()
         self.contrastive_model = contrastive_model
         self.contrastive_model_type = type(contrastive_model)
@@ -85,7 +85,11 @@ class UNet(nn.Module):
         self.kwargs = {"contrastive_model": contrastive_model,
                        "use_contrastive_output": use_contrastive_output,
                        "grayscale_output": grayscale_output}
+
         self.use_contrastive_model = False
+        self.use_resnet = use_resnet
+        
+        logging.info(f"Using ResNet encoder: {self.use_resnet}")
 
         if self.contrastive_model is not None:
             self.set_contrastive_model()
@@ -171,10 +175,10 @@ class UNet(nn.Module):
         else:
             modules = self.get_encoder_modules()
 
-            if len(modules) == 1:
-                x_down = modules[0][-2].output
-            else:
+            if self.use_resnet:
                 x_down = modules[-3].output
+            else:
+                x_down = modules[-2].output
 
             #assert x_down.shape[1:] == (512, 7, 7)
 
@@ -195,7 +199,9 @@ class UNet(nn.Module):
             raise ValueError(f"Provided model is of type {type(self.contrastive_model)}, but expected one of MapSIMCLR or MapBYOL")
 
         if len(modules) == 1:
+            assert not self.use_resnet, "If the length of the modules of the contrastive model is 1, you can't be using a ResNet model"
             return modules[0]
+
         return modules
 
     def set_contrastive_model(self):
@@ -251,11 +257,12 @@ class UNet(nn.Module):
             return None
 
         cl_model.load_state_dict(state_dict=checkpoint["best_model_state_dict"])
+        use_resnet = model_kwargs["encoder_parameters"]["use_resnet"]
 
         logging.info("Model loaded and set to evaluation mode")
         cl_model.eval()
 
-        return cls(cl_model, use_contrastive_output, grayscale_output)
+        return cls(cl_model, use_contrastive_output, grayscale_output, use_resnet)
 
     def compile_model(self, historical_imgs, canonical_imgs, loss_str="MSE", optimiser=optim.Adam, **optim_kwargs):
 
